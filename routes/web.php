@@ -41,15 +41,10 @@ Route::get('/test', function () {
   Route::get('/do/forward', [SpamController::class, 'doForward']);
 }
 
-
-
+//Auth
 Auth::routes();
 Route::get('/auth/user', function (){return response()->json(Auth::user());});
 Route::post('/logout', [LoginController::class, 'jsonLogout']);
-// Route::post('/logout', function (){return response()->json(1);});
-
-
-
 
 //Juge CRUD
 Route::middleware([])->group(function (){
