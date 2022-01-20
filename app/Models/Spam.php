@@ -11,6 +11,18 @@ class Spam extends Model
 {
   use HasFactory;
 
+  protected $keys = [
+    ['key'    => 'id','label' => 'ID'],
+    ['key'    => 't_acc_phone','label' => 'Аккаунт'],
+    ['key'    => 'name','label' => 'Название'],
+    ['key'    => 'peer','label' => 'Группа'],
+    ['key'    => 'text','label' => 'Текст'],
+    ['key'    => 'delay','label' => 'Только первый заказ'],
+    ['key'    => 'status','label' => 'Статус'],
+    ['key'    => 'sent_at','label' => 'Last Send At'],
+    ['key'    => 'created_at','label' => 'Создан'],
+  ];  
+
   public static function doForward(){
     $logins = ['+447789122157','+380992416157'];
 
@@ -29,20 +41,21 @@ class Spam extends Model
         foreach ($messages as $key => $message) {
           array_push($messageIds, $message->id);        
         }
-
-        //Forward
-        $forwardTo = false;
-        if($login == '+447789122157') $forwardTo = 'miner2t2';
-        if($login == '+380992416157') $forwardTo = 'miner2t2';
         
-        $doForward = false;
-        if($forwardTo){
-
-          $doForward = Madeline::forwardMessages($login, $messageIds, $user['peer']->user_id, $forwardTo);
-
-          dump($doForward);
-          if($doForward){
-            Madeline::readHistory($login, $user['peer']->user_id);
+        {//Forward
+          $forwardTo = false;
+          if($login == '+447789122157') $forwardTo = 'miner2t2';
+          if($login == '+380992416157') $forwardTo = 'miner2t2';
+          
+          $doForward = false;
+          if($forwardTo){
+  
+            $doForward = Madeline::forwardMessages($login, $messageIds, $user['peer']->user_id, $forwardTo);
+  
+            dump($doForward);
+            if($doForward){
+              Madeline::readHistory($login, $user['peer']->user_id);
+            }
           }
         }
 
@@ -134,4 +147,35 @@ class Spam extends Model
     $spam->save();
 
   }
+
+
+
+  //JugeCRUD  
+  public function jugeGetInputs()       {return $this->inputs;}
+  public function jugeGetPostInputs()   {return $this->postInputs;}
+  public function jugeGetKeys()         {return $this->keys;} 
+
+
+  public static function jugeGet($request = []) {
+    //Model
+    $query = new self;
+  
+    {//With
+      //
+    }
+  
+    {//Where
+      //
+    }
+  
+    //Get
+    $data = JugeCRUD::get($query,$request);
+  
+    //Single
+    if(isset($request['id']) && isset(data[0])){$data = $data[0];}
+  
+    //Return
+    return $data;
+  }
+
 }

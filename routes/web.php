@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MadelineController;
 use App\Http\Controllers\SpamController;
+use App\Http\Controllers\Auth\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,9 +16,10 @@ use App\Http\Controllers\SpamController;
 |
 */
 
-Route::get('/', function () {
-  return view('welcome');
-});
+// Route::get('/', function () {
+//   return view('welcome');
+// });
+
 Route::get('/test', function () {
   dd(App\Models\Madeline::testMessage('+447789122157'));
   // App\Models\Madeline::test(
@@ -28,21 +30,47 @@ Route::get('/test', function () {
   // );
 });
 
-// Route::get('/test', [MadelineController::class, 'joinChannel']);
-Route::get('/login', [MadelineController::class, 'login']);
-Route::get('/send/code', [MadelineController::class, 'sendCode']);
 
+{//Login madeline
+  Route::get('/login', [MadelineController::class, 'login']);
+  Route::get('/send/code', [MadelineController::class, 'sendCode']);
+}
 
-Route::get('/do/actual', [SpamController::class, 'doActual']);
-Route::get('/do/forward', [SpamController::class, 'doForward']);
+{//Crone
+  Route::get('/do/actual', [SpamController::class, 'doActual']);
+  Route::get('/do/forward', [SpamController::class, 'doForward']);
+}
 
 
 Auth::routes();
+Route::get('/auth/user', function (){return response()->json(Auth::user());});
+Route::post('/logout', [LoginController::class, 'jsonLogout']);
+// Route::post('/logout', function (){return response()->json(1);});
 
-//Vue Pages
-Route::get('/{vue_capture?}', function () {
-  return view('main');
-})->where('vue_capture', '[\/\w\.-]*');
+
+
+
+//Juge CRUD
+Route::middleware([])->group(function (){
+  Route::get('/juge', "App\Http\Controllers\JugeCRUDController@get");
+  Route::get('/juge/keys', 'App\Http\Controllers\JugeCRUDController@getKeys');
+  Route::get('/juge/inputs', 'App\Http\Controllers\JugeCRUDController@getInputs');   
+  
+  //Config
+  Route::post('/juge/crud/settings', 'App\Http\Controllers\JugeCRUDController@postConfig');
+});
+
+
+Route::group(['middleware' => ['auth']], function (){
+
+  //Vue Pages
+  Route::get('/{vue_capture?}', function () {
+    return view('main');
+  })->where('vue_capture', '[\/\w\.-]*');
+
+});
+
+
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
