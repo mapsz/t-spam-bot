@@ -10,12 +10,10 @@
         "production": "mix --production"
     },
     "devDependencies": {
-<<<<<<< HEAD
         "axios": "^0.21",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
-        "postcss": "^8.1.14"
-=======
+        "postcss": "^8.1.14",
         "@popperjs/core": "^2.10.2",
         "axios": "^0.21",
         "bootstrap": "^5.1.3",
@@ -31,6 +29,5 @@
     },
     "dependencies": {
         "vue-router": "^3.5.3"
->>>>>>> ba80c40ccdd1335d4d221ef9d46ee7e305b2210f
     }
 }

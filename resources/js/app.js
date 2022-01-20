@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-require('./bootstrap');
-=======
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -25,4 +22,3 @@ const app = new Vue({
     el: '#app',    
     router: new VueRouter(routes),
 });
->>>>>>> ba80c40ccdd1335d4d221ef9d46ee7e305b2210f
