@@ -35,3 +35,16 @@ Route::get('/send/code', [MadelineController::class, 'sendCode']);
 
 Route::get('/do/actual', [SpamController::class, 'doActual']);
 Route::get('/do/forward', [SpamController::class, 'doForward']);
+<<<<<<< HEAD
+=======
+
+
+Auth::routes();
+
+//Vue Pages
+Route::get('/{vue_capture?}', function () {
+  return view('main');
+})->where('vue_capture', '[\/\w\.-]*');
+
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+>>>>>>> ba80c40ccdd1335d4d221ef9d46ee7e305b2210f

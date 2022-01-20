@@ -1,5 +1,12 @@
 window._ = require('lodash');
 
+<<<<<<< HEAD
+=======
+try {
+    require('bootstrap');
+} catch (e) {}
+
+>>>>>>> ba80c40ccdd1335d4d221ef9d46ee7e305b2210f
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
  * to our Laravel back-end. This library automatically handles sending the

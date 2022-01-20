@@ -5,7 +5,11 @@ error_reporting(E_ALL);
 
 // Load composer
 require __DIR__ . '/vendor/autoload.php';
+<<<<<<< HEAD
 $libFolder = __DIR__ . "/lib/";
+=======
+$libFolder = __DIR__ . "\lib\\";
+>>>>>>> ba80c40ccdd1335d4d221ef9d46ee7e305b2210f
 
 {//Validator
   //Work
@@ -23,7 +27,11 @@ $libFolder = __DIR__ . "/lib/";
   $settings->setApiHash("f94fe34d1d0d5d968955508f3b91b3c4");
     
   //Setup session
+<<<<<<< HEAD
   $session = __DIR__ . "/sessions/" . $_GET["login"] . ".madeline";
+=======
+  $session = $_GET["login"] . ".madeline";
+>>>>>>> ba80c40ccdd1335d4d221ef9d46ee7e305b2210f
 }
 
 echo 'Work - ' . $_GET['work'] . "\n\n";
