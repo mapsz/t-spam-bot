@@ -42,6 +42,7 @@ Route::get('/test', function () {
 }
 
 
+
 Auth::routes();
 Route::get('/auth/user', function (){return response()->json(Auth::user());});
 Route::post('/logout', [LoginController::class, 'jsonLogout']);
