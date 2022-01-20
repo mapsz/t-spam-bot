@@ -45,3 +45,4 @@ Route::get('/{vue_capture?}', function () {
 })->where('vue_capture', '[\/\w\.-]*');
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
