@@ -39,6 +39,10 @@ window.load = new load('#8ac2a73b','/img/nurik-loader.jpgz')
 import draggable from 'vuedraggable';
 Vue.component("draggable", draggable);
 
+//Toasted
+import Toasted from 'vue-toasted'; 
+Vue.use(Toasted);
+
 const files = require.context('./', true, /\.vue$/i)
 files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 

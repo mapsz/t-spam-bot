@@ -2,6 +2,8 @@
   <juge-layout>
     <div class="container-fluid">
       <h1>Спам</h1>
+
+      <juge-add :model="'spam'" />
       
       <juge-list :data="'spam'" :edit="true" :delete="true" :pages="true" />
     </div>

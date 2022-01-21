@@ -16,11 +16,11 @@ class CreateSpamTable extends Migration
         Schema::create('spam', function (Blueprint $table) {
             $table->id();            
             $table->char('t_acc_phone');
-            $table->char('name');
+            $table->char('name')->nullable();
             $table->char('peer');
             $table->text('text');
             $table->integer('delay');
-            $table->tinyInteger('status');
+            $table->tinyInteger('status')->default(0);
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();
         });

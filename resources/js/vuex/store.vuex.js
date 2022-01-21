@@ -7,7 +7,7 @@ import jugeVuex from './juge-vuex.vuex.js'
 let store = {  
   modules:{
     user: require('./modules/user.vuex').default,
-    spam: new jugeVuex('spam'),
+    spam: new jugeVuex('spam', true, true),
 
   }
 };

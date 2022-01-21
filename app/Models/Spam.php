@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Validator;
 
 use App\Models\Madeline;
 
@@ -17,11 +18,50 @@ class Spam extends Model
     ['key'    => 'name','label' => 'Название'],
     ['key'    => 'peer','label' => 'Группа'],
     ['key'    => 'text','label' => 'Текст'],
-    ['key'    => 'delay','label' => 'Только первый заказ'],
-    ['key'    => 'status','label' => 'Статус'],
+    ['key'    => 'delay','label' => 'Задержка'],
+    ['key'    => 'status', 'label' => 'Активен','type' => 'intToStr', 'intToStr' =>[
+      1 => 'да',
+      0 => 'нет',
+    ]],
     ['key'    => 'sent_at','label' => 'Last Send At'],
     ['key'    => 'created_at','label' => 'Создан'],
-  ];  
+  ];
+  
+  protected $inputs = [
+    [
+      'name' => 'status',
+      'caption' => 'Активен',
+      'type' => 'checkbox'
+    ],
+    [
+      'name' => 't_acc_phone',
+      'caption' => 'Аккаунт',
+      'type' => 'text'
+    ],
+    [
+      'name' => 'name',
+      'caption' => 'Название',
+      'type' => 'text'
+    ],
+    [
+      'name' => 'peer',
+      'caption' => 'Группа',
+      'info' => 'ссылка (https://t.me/XXXXX)',
+      'type' => 'text'
+    ],
+    [
+      'name' => 'delay',
+      'caption' => 'Задержка',
+      'info' => 'минуты',
+      'type' => 'number'
+    ],
+    [
+      'name' => 'text',
+      'caption' => 'Текст',
+      'type' => 'textEditor'
+    ],
+  ];
+
 
   public static function doForward(){
     $logins = ['+447789122157','+380992416157'];
@@ -151,8 +191,16 @@ class Spam extends Model
 
 
   //JugeCRUD  
-  public function jugeGetInputs()       {return $this->inputs;}
-  public function jugeGetPostInputs()   {return $this->postInputs;}
+  public function jugeGetInputs(){
+    $inputs = $this->inputs;
+    $fInputs = [];
+    foreach ($inputs as $key => $input) {
+      if($input['name'] == 'status') continue;
+      array_push($fInputs, $input);
+    }
+    return $fInputs;
+  }
+  public function jugeGetPostInputs()   {return $this->inputs;}
   public function jugeGetKeys()         {return $this->keys;} 
 
 
@@ -165,17 +213,74 @@ class Spam extends Model
     }
   
     {//Where
-      //
+      $query = JugeCRUD::whereSearches($query,$request);
     }
+
+    //Order
+    $query = $query->OrderBy('created_at', 'DESC');
   
     //Get
     $data = JugeCRUD::get($query,$request);
   
     //Single
-    if(isset($request['id']) && isset(data[0])){$data = $data[0];}
+    if(isset($request['id']) && isset($data[0])){$data = $data[0];}
   
     //Return
     return $data;
+  }
+
+  //Pre validate edits
+  public static function jugePostPreValidateEdits($data){return self::preValidateEdits($data);}
+  public static function jugePutPreValidateEdits($data){return self::preValidateEdits($data);}
+  public static function preValidateEdits($data){
+    //Clear html tags
+    if(isset($data['text'])){
+      $data['text'] = strip_tags($data['text'], ['<br>', '<p>']);
+      $data['text'] = str_replace('<br>',"\n",$data['text']);
+      $data['text'] = str_replace('<p>',"",$data['text']);
+      $data['text'] = str_replace('</p>',"\n",$data['text']);
+    }
+
+    return $data;
+  }
+
+  //Validate
+  public static function jugePostValidate($data){return self::validate($data, 'post');}
+  public static function jugePutValidate($data){return self::validate($data, 'put');}
+  public static function validate($data, $type){
+
+    //Validate
+    Validator::make($data, [
+      'name'                  => 'string|max:191',
+      'peer'                  => 'string|max:191',
+      'delay'                 => 'numeric',
+      'text'                  => 'string|max:650',
+    ])->validate();
+
+    //t_acc_phone
+    if(isset($data['t_acc_phone'])){
+      $valid = preg_match('/^[+][0-9]{6}[0-9]*$/', $data['t_acc_phone']);
+      Validator::make(['valid' => $valid], ['valid' => 'required|accepted'], ['valid.accepted' => 'Аккаунт должен быть подобного формата +77559874422'])->validate();
+    }
+
+    //peer
+    if(isset($data['peer'])){
+      $valid = preg_match('/^https:\/\/t.me\/.{3}.*$/', $data['peer']);
+      Validator::make(['valid' => $valid], ['valid' => 'required|accepted'], ['valid.accepted' => 'Группа должен быть подобного формата https://t.me/Shopmining1'])->validate();
+    }
+
+    //More put things
+    if($type == 'put'){
+      Validator::make($data, [
+        't_acc_phone'           => 'required',
+        'peer'                  => 'required',
+        'delay'                 => 'required',
+        'text'                  => 'required',
+      ])->validate();
+    }
+
+    return true;
+
   }
 
 }

@@ -1,11 +1,11 @@
 let routes = [];
 
 //Accounts
-routes.push({
-  path: '/accounts',
-  alias: ['/', '/home'],
-  component: require('./components/telegram-accounts/telegram-accounts.vue').default
-});
+// routes.push({
+//   path: '/accounts',
+//   alias: ['/', '/home'],
+//   component: require('./components/telegram-accounts/telegram-accounts.vue').default
+// });
 
 //Spam
 routes.push({path: "/spams", component: require('./components/spams/spams.vue').default});

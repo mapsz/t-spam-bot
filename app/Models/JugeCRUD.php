@@ -55,5 +55,43 @@ class JugeCRUD extends Model
     return $data;
   }
 
+  public static function whereSearches($query,$request){
+    if(isset($request['id'])) $query = $query->where('id', $request['id']);
+    return $query;
+  }
+
+  public static function autoPost($model, $data){
+
+    //Get
+    $model = $model->where('id', $data['id'])->first();
+
+    //Edit
+    foreach ($data as $k => $v) {
+      if($k == 'id') continue;
+      $model->$k = $v;
+    }
+
+    //Save
+    $save = $model->save();
+    if($save) return $model->jugeGet(['id' => $data['id']]);
+
+    return false;
+  }
+
+  public static function autoPut($model, $data){
+
+    //Edit
+    foreach ($data as $k => $v) {
+      if($k == 'id') continue;
+      $model->$k = $v;
+    }
+
+    //Save
+    $save = $model->save();
+    if($save) return $model->jugeGet(['id' => $model->id]);
+
+    return false;
+  }
+
 
 }

@@ -48,9 +48,13 @@ Route::post('/logout', [LoginController::class, 'jsonLogout']);
 
 //Juge CRUD
 Route::middleware([])->group(function (){
-  Route::get('/juge', "App\Http\Controllers\JugeCRUDController@get");
+  Route::get('/juge', 'App\Http\Controllers\JugeCRUDController@get');
   Route::get('/juge/keys', 'App\Http\Controllers\JugeCRUDController@getKeys');
-  Route::get('/juge/inputs', 'App\Http\Controllers\JugeCRUDController@getInputs');   
+  Route::get('/juge/inputs', 'App\Http\Controllers\JugeCRUDController@getInputs');    
+  Route::get('/juge/post/inputs', 'App\Http\Controllers\JugeCRUDController@getPostInputs');    
+  Route::put('/juge', 'App\Http\Controllers\JugeCRUDController@put');
+  Route::post('/juge', 'App\Http\Controllers\JugeCRUDController@post');
+  Route::delete('/juge', 'App\Http\Controllers\JugeCRUDController@delete'); 
   
   //Config
   Route::post('/juge/crud/settings', 'App\Http\Controllers\JugeCRUDController@postConfig');

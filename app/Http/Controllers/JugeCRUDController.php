@@ -143,27 +143,91 @@ class JugeCRUDController extends Controller
     return response()->json($modelInputs);
   }
 
+  public function put(Request $request){
+
+    {// Check model exists
+      //No model
+      if(!isset($request['model']) && $request['model'] == ''){
+        return response(['code' => 'jugep1','text' => 'no model name'], 512)->header('Content-Type', 'text/plain');
+      }
+    }
+
+    {//Get model
+      $modelName = $request['model'];
+      $model = "App\Models\\".ucfirst($modelName);
+      $model = new $model;
+    }
+
+    //Get data
+    $data = $request->data;
+
+    {//Pre Validate Edits
+      if(method_exists ( $model , 'jugePutPreValidateEdits' )){
+        $data = $model->jugePutPreValidateEdits($data);
+      } 
+    }
+
+    {//Validate
+      if(method_exists ( $model , 'jugePutValidate' )){
+        $validate = $model->jugePutValidate($data);
+      } 
+    }
+    
+    {//Put
+      $post = false;
+      if(method_exists ( $model , 'jugePut' )){
+        $post = $model->jugePut($data);
+      }else{
+        $post = JugeCRUD::autoPut($model, $data);
+      }  
+    }     
+    
+    return response()->json($post);
+  }
+
   public function post(Request $request){
-    //No model
-    if(!isset($request['model']) && $request['model'] == ''){
-      return response(['code' => 'jugep1','text' => 'no model name'], 512)->header('Content-Type', 'text/plain');
-    }    
+    
+    {// Check model/id exists
+      //No model
+      if(!isset($request['model']) && $request['model'] == ''){
+        return response(['code' => 'jugep1','text' => 'no model name'], 512)->header('Content-Type', 'text/plain');
+      }    
 
-    //No id
-    if(!isset($request['data']['id']) && $request['data']['id'] == '' && $request['data']['id'] == false){
-      return response(['code' => 'jugep2','text' => 'no id'], 512)->header('Content-Type', 'text/plain');
-    } 
+      //No id
+      if(!isset($request['data']['id']) && $request['data']['id'] == '' && $request['data']['id'] == false){
+        return response(['code' => 'jugep2','text' => 'no id'], 512)->header('Content-Type', 'text/plain');
+      } 
+    }
+    
+    {//Get model
+      $modelName = $request['model'];
+      $model = "App\Models\\".ucfirst($modelName);
+      $model = new $model;
+    }
 
-    //Get mode
-    $modelName = $request['model'];
-    $model = "App\Models\\".ucfirst($modelName);
-    $model = new $model;
+    //Get data
+    $data = $request->data;
 
-    //Get model inputs
-    $post = false;
-    if(method_exists ( $model , 'jugePost' )){
-      $post = $model->jugePost($request->data);
-    }       
+    {//Pre Validate Edits
+      if(method_exists ( $model , 'jugePostPreValidateEdits' )){
+        $data = $model->jugePostPreValidateEdits($data);
+      } 
+    }
+
+    {//Validate
+      if(method_exists ( $model , 'jugePostValidate' )){
+        $validate = $model->jugePostValidate($data);
+      } 
+    }
+    
+    {//Post
+      $post = false;
+      if(method_exists ( $model , 'jugePost' )){
+        $post = $model->jugePost($data);
+      }else{
+        $post = JugeCRUD::autoPost($model, $data);
+      }  
+    }     
     
     return response()->json($post);
   }

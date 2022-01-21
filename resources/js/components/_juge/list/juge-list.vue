@@ -119,7 +119,7 @@
     <b-modal :id="'juge-list-delete'" :title="'Подтвердить удаление 🗑️'" ok-only hide-footer>
       <div>
         ID: {{toDelete.id}}
-        <!-- <button class="btn btn-danger">Удалить</button> -->
+        <!-- <juge-list-delete :model="cKeysModelSingle" :row="toEdit" @editSuccess="$bvModal.hide('juge-list-edit');refreshTable()"/> -->
       </div>
     </b-modal>
     

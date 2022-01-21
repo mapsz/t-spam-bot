@@ -1,9 +1,10 @@
 class jugeVuex {
-  constructor(modelName, $edit = false, $delete = false) {
+  constructor(modelName, $put = true, $edit = true, $delete = true) {
     //Params
     this.modelName = modelName;
     this.$edit = $edit;
     this.$delete = $delete;
+    this.$put = $put;
 
     //Vuex
     this.namespaced = true;
@@ -331,6 +332,29 @@ class jugeVuex {
         commit('mKeysModel',model);  
       },
       //Edits
+      async doPut({state,commit},data){
+        if(!$put) return 'not allowed';
+        
+        //Refresh errors
+        commit('mErrors',[]);
+
+        //Post
+        let row = await ax.fetch('/juge',{'model':modelName,data},'put');        
+        
+        //Fail
+        if(!row){
+          //Catch error
+          if(ax.lastResponse.status != undefined){if(ax.lastResponse.status == 422){commit('mErrors',ax.lastResponse.data.errors);}}
+          return false;
+        }
+        if(row.id == undefined) return false;
+
+        //Edit local
+        row.edits = {type:"edits",'delete':$delete,'edit':$edit};
+        commit('mRows', [row].concat(state.rows));
+        
+        return row;
+      },
       async doEdit({state,commit},data){
         if(!$edit) return 'not allowed';
 
