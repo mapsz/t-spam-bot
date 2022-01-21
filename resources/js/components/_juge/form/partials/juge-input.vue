@@ -1,5 +1,5 @@
 <template>  
-  <span>
+  <span style="display:flex;align-items: center;">
 
     <!-- Locked -->
     <div v-if="input.type == 'locked'">
@@ -56,6 +56,7 @@
     <!-- Editor -->
     <vue-editor v-else-if="input.type == 'textEditor'"
       v-model="value" 
+      style="background-color:white"
     />
 
     <!-- Simple -->

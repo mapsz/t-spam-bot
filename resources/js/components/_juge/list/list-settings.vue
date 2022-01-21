@@ -20,7 +20,7 @@
       <div v-for="(k, i) in keys" :key="i" class="">
         <div class="d-flex m-2 p-2 border" style="align-items: center;">
           <span class="px-3 handle" style="cursor: move;">📌</span>
-          <div class="list-settings-row" style="cursor: pointer;">
+          <div class="list-settings-row" style="cursor: pointer; margin-left: 50px;">
             <b-form-checkbox v-model="keys[i].active" @change="save()" switch size="lg" style="padding:0px">
               {{k.label != undefined ? k.label : k.key}}
             </b-form-checkbox>

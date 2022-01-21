@@ -32,7 +32,7 @@ Route::get('/test', function () {
 
 
 {//Login madeline
-  Route::get('/login', [MadelineController::class, 'login']);
+  Route::get('/account/login', [MadelineController::class, 'login']);
   Route::get('/send/code', [MadelineController::class, 'sendCode']);
 }
 
@@ -47,7 +47,7 @@ Route::get('/auth/user', function (){return response()->json(Auth::user());});
 Route::post('/logout', [LoginController::class, 'jsonLogout']);
 
 //Juge CRUD
-Route::middleware([])->group(function (){
+Route::middleware(['auth'])->group(function (){
   Route::get('/juge', 'App\Http\Controllers\JugeCRUDController@get');
   Route::get('/juge/keys', 'App\Http\Controllers\JugeCRUDController@getKeys');
   Route::get('/juge/inputs', 'App\Http\Controllers\JugeCRUDController@getInputs');    

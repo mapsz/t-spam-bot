@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 use App\Models\Madeline;
 
@@ -214,6 +215,13 @@ class Spam extends Model
   
     {//Where
       $query = JugeCRUD::whereSearches($query,$request);
+
+      
+      {//Owner
+        $user = Auth::user(); 
+        if($user) $query = $query->where('owner_id', $user->id);        
+      }
+
     }
 
     //Order
@@ -231,7 +239,11 @@ class Spam extends Model
 
   //Pre validate edits
   public static function jugePostPreValidateEdits($data){return self::preValidateEdits($data);}
-  public static function jugePutPreValidateEdits($data){return self::preValidateEdits($data);}
+  public static function jugePutPreValidateEdits($data){    
+    $user = Auth::user(); 
+    if($user) $data['owner_id'] = $user->id;  
+    return self::preValidateEdits($data);
+  }
   public static function preValidateEdits($data){
     //Clear html tags
     if(isset($data['text'])){

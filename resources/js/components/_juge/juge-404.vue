@@ -4,7 +4,7 @@
       
       <center>
         <h1>404</h1>
-        <img src="/img/404.gif" alt="">
+        <img src="/img/404.gif" alt="" style="max-width: 100%;">
       </center>
 
     </juge-layout>

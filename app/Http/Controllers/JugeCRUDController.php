@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\models\JugeCRUD;
+use App\Models\JugeCRUD;
 
 class JugeCRUDController extends Controller
 {

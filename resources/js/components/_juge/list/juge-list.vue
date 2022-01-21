@@ -31,7 +31,7 @@
     :head-variant="'dark'" 
     :items="cData"
     :fields="cActiveKeys"   
-    striped hover small bordered responsive    
+    striped hover small bordered responsive 
     ref="jugeListTable"
   >
    <!-- @sort-changed="sort" -->

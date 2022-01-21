@@ -15,6 +15,7 @@ class CreateSpamTable extends Migration
     {
         Schema::create('spam', function (Blueprint $table) {
             $table->id();            
+            $table->bigInteger('owner_id')->unsigned();
             $table->char('t_acc_phone');
             $table->char('name')->nullable();
             $table->char('peer');
