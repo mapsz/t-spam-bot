@@ -8,6 +8,7 @@ let store = {
   modules:{
     user: require('./modules/user.vuex').default,
     spam: new jugeVuex('spam', true, true),
+    tAcc: new jugeVuex('tAcc', true, true),
 
   }
 };

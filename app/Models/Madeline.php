@@ -5,37 +5,107 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Crypt;
 
 class Madeline extends Model
 {
   use HasFactory;
 
-  public static function getUrl(){
-    return getenv('APP_URL') . 'public/madeline/';;
+  private $login;
+  private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
+
+
+  private static function getUrl(){return getenv('APP_URL') . 'madeline/';}
+  private function setLogin($login){return $this->login = $login;}
+  private function getLogin(){return $this->login;}
+  private function getCryptKey(){return $this->cryptKey;}
+  
+  public function __construct($login) {
+    $this->setLogin($login);
+  }
+ 
+  private function encrypt($message): string{
+    if(gettype($message) !== 'string') $message = json_encode($message);
+    $key = $this->getCryptKey();
+
+    if (mb_strlen($key, '8bit') !== SODIUM_CRYPTO_SECRETBOX_KEYBYTES) {
+        return ('Key is not the correct size (must be 32 bytes).');
+    }
+    $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+    
+    $cipher = base64_encode(
+        $nonce.
+        sodium_crypto_secretbox(
+            $message,
+            $nonce,
+            $key
+        )
+    );
+    sodium_memzero($message);
+    sodium_memzero($key);
+    return $cipher;
+  }
+  
+  private function decrypt(string $encrypted): string{
+    $key = $this->getCryptKey();
+
+    $decoded = base64_decode($encrypted);
+    $nonce = mb_substr($decoded, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, '8bit');
+    $ciphertext = mb_substr($decoded, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit');
+    
+    $plain = sodium_crypto_secretbox_open(
+        $ciphertext,
+        $nonce,
+        $key
+    );
+    if (!is_string($plain)) {
+        throw new Exception('Invalid MAC');
+    }
+    sodium_memzero($ciphertext);
+    sodium_memzero($key);
+    return $plain;
   }
 
-  public static function login($login){
-    $url = self::getUrl();
-    $params = [
-      'work' => 'login', 
-      'login' => $login
-    ];
+  private function fetch($work, $params=false){
 
-    $request = Http::get($url, $params);
+    if(!$params) $params = [];
+
+    $params['work'] = $work;
+    $params['login'] = $this->getLogin();
+    
+    //Encrypt params
+    $encrypt = $this->encrypt($params);
+
+    //Fetch
+    $request = Http::get(self::getUrl(), ['enc' => $encrypt]);
     $response = (string) $request->getBody();
-
     $result = self::resultDecode($response);
 
-    if($result == 'need code'){
-      return 'need code';
-    }
+    return $result;
 
-    return $response;
+  }
+
+  public function login(){
+
+    $result = $this->fetch('phoneLogin');
+
+    dd($result);
+
+    // $result = self::resultDecode($response);
+
+    // if($result == 'need code'){
+    //   return 'need code';
+    // }
+    // if($result == 'already log in'){
+    //   return 'already log in';
+    // }
+
+    // return $response;
   }
 
   public static function loginSendCode($login, $code){
 
-    $url = getenv('APP_URL') . 'public/madeline/';
+    $url = self::getUrl();
     $params = [
       'work' => 'login', 
       'login' => $login,
@@ -46,7 +116,17 @@ class Madeline extends Model
     $request = Http::get($url, $params);
     $response = (string) $request->getBody();
 
-    dump($response);
+    $result = self::resultDecode($response);
+
+    if($result == 'already log in') return 1;
+
+    dd($response);
+
+    $result = json_decode($result);
+
+    if(!$result) return 0;
+
+    dd($result);
 
   }
 
@@ -305,11 +385,12 @@ class Madeline extends Model
         $response,
         $matches
       );
-      if(isset($matches[1])){
+      if(isset($matches[1])){        
+        //Try json decode
+        if(json_decode($matches[1])) return json_decode($matches[1]);
+
+        //Just return
         return $matches[1];
-        // $result = json_decode($matches[0]);
-        // dump($result);
-        // $result = isset($result->text) ? $result->text : false;
       } 
     }
     

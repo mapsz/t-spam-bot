@@ -4,32 +4,36 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 use App\Models\Madeline;
+use App\Models\tAcc;
 
 class MadelineController extends Controller
 {
   public static function login(Request $request){
 
-    if(!isset($request->login)) dd('no login');
+    //Validate
+    tAcc::phoneValidate($request->phone);
 
-    $login = Madeline::login($request->login);
+    //Try login
+    $login = Madeline::login($request->phone);
 
-    if($login  == 'need code'){
-      return view('getCode', ['login' => $request->login]);
-    }
-
-    dump($login);
+    
+    if($login == "already log in") return 5;
+    if($login == "need code") return 4;
 
     return 0;
   }
 
   public static function sendCode(Request $request){
 
-    if(!isset($request->login)) dd('no login');
-    if(!isset($request->code)) dd('no code');
+    $sendCode = Madeline::loginSendCode($request->phone, $request->code);
 
-    Madeline::loginSendCodeAndTest($request->login, $request->code);
+
+    
+
+    return response()->json($sendCode);
 
   }
 

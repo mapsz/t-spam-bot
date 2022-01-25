@@ -15,6 +15,7 @@ class CreateTAccsTable extends Migration
     {
         Schema::create('t_accs', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('owner_id')->unsigned();
             $table->char('name');
             $table->char('phone', '20');
             $table->tinyInteger('status')->default(0);

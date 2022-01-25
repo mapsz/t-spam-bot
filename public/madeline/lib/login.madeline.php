@@ -22,7 +22,23 @@ if(checkLogin($MadelineProto)) done("already log in");
     //Code Confirm
     if(isset($_GET["type"]) && $_GET["type"] == "code"){
       echo "Code Confirm \n";
-      $auth = $MadelineProto->completePhoneLogin($_GET["code"]);
+
+      // $auth = function() use ($MadelineProto){
+      //   $res = yield $MadelineProto->completePhoneLogin($_GET["code"]);
+      //   return $res;      
+      // };
+      // foreach ($auth as $key => $value) {
+      //   echo $value;
+      // }
+
+      $auth = function() use ($MadelineProto){
+
+        $auth = ( yield completePhoneLogin($MadelineProto, $login) );
+        return $auth;
+      };
+      var_dump($auth);
+
+
       echo "Code Confirm - done\n";
       if(!isset($auth["_"])) done("Code error");
 
@@ -67,4 +83,8 @@ if(checkLogin($MadelineProto)) done("already log in");
 
 function phoneLogin($MadelineProto, $login){
   return yield $MadelineProto->phoneLogin($login);
+}
+
+function completePhoneLogin($MadelineProto, $login){
+  return yield $MadelineProto->completePhoneLogin($login);
 }

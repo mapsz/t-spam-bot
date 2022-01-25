@@ -24,6 +24,10 @@ import Vuex from 'vuex'
 import store from './vuex/store.vuex.js';
 Vue.use(Vuex)
 
+//Moment
+import moment from "moment";
+window.moment = moment;
+
 //jQuery
 import $ from "jquery";
 window.$ = $;

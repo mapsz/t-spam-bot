@@ -5,35 +5,18 @@ use App\Http\Controllers\MadelineController;
 use App\Http\Controllers\SpamController;
 use App\Http\Controllers\Auth\LoginController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
-// Route::get('/', function () {
-//   return view('welcome');
-// });
-
 Route::get('/test', function () {
-  dd(App\Models\Madeline::testMessage('+447789122157'));
-  // App\Models\Madeline::test(
-  //   [
-  //     'work' => 'getAllChats',
-  //     'login' => '+79001485597',
-  //   ]
-  // );
+  dd(
+
+    json_decode('{"result":1,"text":{"_":"auth.authorization","setup_password_required":false,"user":{"_":"user","self":true,"contact":false,"mutual_contact":false,"deleted":false,"bot":false,"bot_chat_history":false,"bot_nochats":false,"verified":false,"restricted":false,"min":false,"bot_inline_geo":false,"support":false,"scam":false,"apply_min_photo":true,"fake":false,"id":517183883,"access_hash":-7849556256254681675,"first_name":"\u042e\u0440\u0430","username":"jurijsgergelaba","phone":"37128885282","photo":{"_":"userProfilePhoto","has_video":false,"photo_id":2221287863959529390,"stripped_thumb":{"_":"bytes","bytes":"AQgIJJmVNvmHbnGMjGKKKKLAfw=="},"dc_id":4},"status":{"_":"userStatusOffline","was_online":1642854814}}}}')
+    ->text
+  );
 });
 
 
 {//Login madeline
-  Route::get('/account/login', [MadelineController::class, 'login']);
-  Route::get('/send/code', [MadelineController::class, 'sendCode']);
+  Route::post('/account/login', [MadelineController::class, 'login']);
+  Route::post('/send/code', [MadelineController::class, 'sendCode']);
 }
 
 {//Crone
@@ -42,9 +25,11 @@ Route::get('/test', function () {
 }
 
 //Auth
-Auth::routes();
-Route::get('/auth/user', function (){return response()->json(Auth::user());});
-Route::post('/logout', [LoginController::class, 'jsonLogout']);
+Route::group([], function (){
+  Auth::routes();
+  Route::get('/auth/user', function (){return response()->json(Auth::user());});
+  Route::post('/logout', [LoginController::class, 'jsonLogout']);
+});
 
 //Juge CRUD
 Route::middleware(['auth'])->group(function (){

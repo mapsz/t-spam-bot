@@ -20,9 +20,7 @@
 </template>
 
 <script>
-import {mapGetters, mapActions} from 'vuex';
-export default {
-  
+export default {  
 props: ['model'],
 data(){return{
   addShow:false,
@@ -51,10 +49,10 @@ methods:{
 
 <style scoped>
   .add {
-      background-color: #e4f9e4;
-      padding: 20px;
-      border: 1px solid green;
-      border-radius: 7px;
-      margin: 10px 0px;
+    background-color: #e4f9e4;
+    padding: 20px;
+    border: 1px solid green;
+    border-radius: 7px;
+    margin: 10px 0px;
   }
 </style>

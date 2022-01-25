@@ -24,8 +24,8 @@ class Spam extends Model
       1 => 'да',
       0 => 'нет',
     ]],
-    ['key'    => 'sent_at','label' => 'Last Send At'],
-    ['key'    => 'created_at','label' => 'Создан'],
+    ['key'    => 'sent_at','label' => 'Last Send At', 'type' => 'moment', 'moment' => 'lll'],
+    ['key'    => 'created_at','label' => 'Создан', 'type' => 'moment', 'moment' => 'lll'],
   ];
   
   protected $inputs = [
@@ -224,7 +224,7 @@ class Spam extends Model
 
     }
 
-    //Order
+    //Order by
     $query = $query->OrderBy('created_at', 'DESC');
   
     //Get

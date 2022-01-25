@@ -61,11 +61,9 @@
     </span>
   </template>
 
-  <span v-for='(errorz,z) in errors' :key='z+"d"' class="juge-form-error">
-    <span v-for='(error,j) in errorz' :key='j'>
-      {{error}}
-    </span>    
-  </span>
+
+  <!-- Errors -->  
+  <juge-errors :errors="errors" class="juge-form-error" />
 
   <button class="juge-form-save btn btn-success" type="submit">{{buttonCaption}}</button>
 

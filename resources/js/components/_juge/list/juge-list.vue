@@ -17,7 +17,7 @@
     <!-- Total -->
     <div class="pre-table-box box-total" v-if="total > 3 && cData.length > 3">
       <span style="margin-right:10px">Всего: {{total}}</span>
-      <span v-if="cPages && cPages.per_page != undefined" style="color:gray">На странице: {{cPages.per_page}}</span>
+      <span v-if="cPages && cPages.per_page != undefined && cPages.last_page > 1" style="color:gray">На странице: {{cPages.per_page}}</span>
     </div>   
     <!-- List settings -->
     <div class="pre-table-box box-settings" style="">
@@ -37,8 +37,17 @@
    <!-- @sort-changed="sort" -->
     <!-- no-local-sorting -->
     <template v-slot:cell()="data">
+      <!-- Moment -->      
+      <span v-if="data.field.type == 'moment'">
+        <template v-if="moment(data.value).locale('ru').format(data.field.moment) != 'Invalid date'">
+          {{moment(data.value).locale("ru").format(data.field.moment)}}
+        </template>
+        <template v-else>
+          {{data.value}}
+        </template>        
+      </span>
       <!-- Link -->
-      <span v-if="data.field.type == 'link'">
+      <span v-else-if="data.field.type == 'link'">
         <a :href="getLink(data.item,data.field)">
           {{ data.value }}
         </a>        
@@ -141,6 +150,7 @@ import {mapGetters, mapActions} from 'vuex';
 export default {
 props: ['data','keys','disable-auto-fetch','pages','edit','delete'],
 data(){return{
+  moment:moment,
   listModal: {id:'list-modal',title:'',content:'',show:''},
   toDelete: false,
   toEdit: false,
