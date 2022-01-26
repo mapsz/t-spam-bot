@@ -140,9 +140,12 @@ class Spam extends Model
   }
 
   public static function joinAllChats($login){
+
+    //Madeline
+    $madeline = new Madeline($login);
     
     //Get Chats
-    $chats = Madeline::getAllChats($login);    
+    $chats = $madeline->getAllChats();
 
     $spams = Spam::where('status', '1')->where('t_acc_phone', $login)->get();
 
@@ -171,7 +174,7 @@ class Spam extends Model
 
       //Join
       if($join){
-        dump(Madeline::joinChannel($login, $spam->peer));
+        dump($madeline->joinChannel($spam->peer));
         $joined++;
       }
 
@@ -181,7 +184,9 @@ class Spam extends Model
 
   public static function send($spam){
 
-    Madeline::sendMessage($spam->t_acc_phone, $spam->peer, $spam->text);
+    $madeline = new Madeline($spam->t_acc_phone); //@@@ 
+
+    $madeline->sendMessage($spam->peer, $spam->text);
 
     $spam->sent_at = now();
 

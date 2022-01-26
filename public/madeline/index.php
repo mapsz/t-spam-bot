@@ -23,6 +23,7 @@ $get = decrypt($_GET['enc']);
   $work = $get['work'];
   $login = $get['login'];
   $params = (array) $get['params'];
+  $params = count($params) == 0 ? null : $params;
 }
 
 {//Setup settings/session
@@ -42,22 +43,50 @@ echo 'Work - ' . $work . "\n";
 $MadelineProto = new \danog\MadelineProto\API($session, $settings);
 $MadelineProto->async(false);
 
-$update = null;
-$fail = false;
+//Query
 try {
+  
+  $update = null;
+  $fail = false;
+  $dot = false;
 
-  switch ($work) {
-    case 'phoneLogin':
-      $update = $MadelineProto->phoneLogin($login);
-    break;
-    //Single parameter
-    case 'completePhoneLogin':
-      $update = $MadelineProto->$work($params['code']);
-    break;    
-    default:
-      $update = $MadelineProto->$work($params);
-    break;
+  //Dot
+  if(strpos($work, '.') !== false){
+    $works = explode('.',$work);
+    $work1 = $works[0];
+    $work2 = $works[1];
+    $dot = true;
   }
+
+  if($dot){
+    echo "Dot - $work1 $work2}";
+    //Dot
+    switch ($work) {
+      case 'value':
+        # code...
+      break;      
+      default:
+        $update = $MadelineProto->$work1->$work2($params);
+      break;
+    }
+
+  }else{
+    //No Dot
+    switch ($work) {
+      case 'phoneLogin':
+        $update = $MadelineProto->phoneLogin($login);
+      break;
+      //Single parameter
+      case 'completePhoneLogin':
+        $update = $MadelineProto->$work($params['code']);
+      break;    
+      default:
+        $update = $MadelineProto->$work($params);
+      break;
+    }
+
+  }
+
 
 
 } catch (Exception $e) {

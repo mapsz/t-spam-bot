@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Crypt;
 
 use App\Models\JugeLogs;
-use App\Models\tAcc;
+use App\Models\TAcc;
 
 class Madeline extends Model
 {
@@ -18,6 +18,7 @@ class Madeline extends Model
   private $login;
   private $loginInfo;
   private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
+  private $error = false;
 
 
   private static function getUrl(){return getenv('APP_URL') . 'madeline/';}
@@ -27,6 +28,8 @@ class Madeline extends Model
   private function getLogin(){return $this->login;}
   private function getCryptKey(){return $this->cryptKey;}  
   private function getDebug(){return $this->debug;}
+  private function setError($error){return $this->error = $error;}
+  private function getError(){return $this->error;}
   
   public function __construct($login) {
     $this->setLogin($login);
@@ -74,7 +77,7 @@ class Madeline extends Model
     return $plain;
   }
 
-  private function fetch($work, $params=false){
+  private function _query($work, $params=[]){
 
     $data['work'] = $work;
     $data['login'] = $this->getLogin();
@@ -83,7 +86,7 @@ class Madeline extends Model
     //Encrypt params
     $encrypt = $this->encrypt($data);
 
-    //Fetch
+    //Query
     $request = Http::get(self::getUrl(), ['enc' => $encrypt]);
     $response = (string) $request->getBody();
     $result = self::resultDecode($response);
@@ -98,7 +101,7 @@ class Madeline extends Model
   }
 
   public function getSelf(){
-    $self = $this->fetch('getSelf');
+    $self = $this->_query('getSelf');
     if($self){
       $this->setLoginInfo($self);
       return $self;
@@ -111,12 +114,12 @@ class Madeline extends Model
     $self = $this->getSelf();
 
     if(!$self){
-      tAcc::setNotLogin($this->getLogin());
+      TAcc::setNotLogin($this->getLogin());
       return false;
     }
 
     if(isset($self->_) && $self->_ == 'user'){
-      tAcc::updateLoginTime($this->getLogin());
+      TAcc::updateLoginTime($this->getLogin());
       return true;
     } 
 
@@ -127,7 +130,7 @@ class Madeline extends Model
 
     if($this->checkLogin()) return 'already log in';
     
-    $result = $this->fetch('phoneLogin');
+    $result = $this->_query('phoneLogin');
     
     if(gettype($result) == 'string' && strpos($result, "FLOOD_WAIT_X (420)") !== false){
       return 'flood';
@@ -152,7 +155,7 @@ class Madeline extends Model
 
     if($this->checkLogin()) return 'already log in';
 
-    $result = $this->fetch('completePhoneLogin', ['code' => $code]);
+    $result = $this->_query('completePhoneLogin', ['code' => $code]);
 
     //Catch errors
     if(!isset($result) || !$result){
@@ -197,46 +200,28 @@ class Madeline extends Model
 
   }
 
-  public static function joinChannel($login, $channel){
- 
-    $params = [
-      'work' => 'joinChannel', 
-      'login' => $login,
-      'channel' => $channel
-    ];
+  public function joinChannel($channel){
+    $result = $this->_query('channels.joinChannel', ['channel' => $channel]);
+    
+    if(gettype($result) == 'string' && strpos($result, "The provided peer id is invalid") !== false){
+      $this->setError('The provided peer id is invalid');
+      return false;
+    }
 
-
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
-
-    return $response;
-
-
+    if(isset($result->chats) && isset($result->chats[0]) && isset($result->_) && $result->_ == 'updates'){
+      return true;
+    }
+    
+    //Log
+    JugeLogs::log(116, $result);
+    
+    return false;
   }
   
-  public static function leaveChannel($login, $channel){
- 
-    $params = [
-      'work' => 'leaveChannel', 
-      'login' => $login,
-      'channel' => $channel
-    ];
-
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
-
-    return $response;
-  }
-
-  public static function getAllChats($login){
+  public function getAllChats(){
 
     //Get chats
-    $request = Http::get(self::getUrl(),[
-      'work' => 'getAllChats',
-      'login' => $login,
-    ]);
-    $response = (string) $request->getBody();  
-    $chats = json_decode(self::resultDecode($response));
+    $chats = $this->_query('messages.getAllChats');
 
     //Check chats exists 
     if(
@@ -246,26 +231,37 @@ class Madeline extends Model
       !isset($chats->chats) || 
       !is_array($chats->chats) || 
       !isset($chats->chats[0])
-    ) return [];
-
+    ){
+      JugeLogs::log(117, $result);
+      return [];
+    } 
 
     return $chats->chats;
   }
 
-  public static function sendMessage($login, $peer, $text){
+  public function sendMessage($peer, $text){
  
     $params = [
-      'work' => 'sendMessage', 
-      'login' => $login,
       'peer' => $peer,
       'message' => $text
     ];
 
+    $result = $this->_query('messages.sendMessage', $params);
 
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
+    if(
+      isset($result->_) && 
+      $result->_ == 'updateShortSentMessage' && 
+      isset($result->request) && 
+      isset($result->request->_) && 
+      $result->request->_ == "messages.sendMessage"
+    ){
+      return true;
+    }
 
-    dump($response);
+    //Log
+    JugeLogs::log(120, $result);
+
+    return false;
 
   }
 
@@ -389,22 +385,9 @@ class Madeline extends Model
 
   }
 
-  public static function testMessage($login){
+  public function testMessage(){
 
-    
-    $params = [
-      'work' => 'testMessage',
-      'login' => $login, 
-    ];
-
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
-
-    $history = self::resultDecode($response);
-
-    // return json_decode($history);
-
-    $chats = self::getAllChats($login);
+    $chats = $this->getAllChats();
 
     $join = true;;
     foreach ($chats as $key => $chat) {
@@ -414,13 +397,11 @@ class Madeline extends Model
       }
     }
 
-    // dd($chats);
+    if($join) self::joinChannel('https://t.me/+2bE5sADRxpI5ZWY0');
 
-    if($join) self::joinChannel($login, 'https://t.me/+2bE5sADRxpI5ZWY0');
+    dump(self::sendMessage('https://t.me/+2bE5sADRxpI5ZWY0', '👺🦆'));
 
-    dump(self::sendMessage($login, 'https://t.me/+2bE5sADRxpI5ZWY0', '👺🦆'));
-
-    self::leaveChannel($login, 778310890);
+    // self::leaveChannel($login, 778310890);
 
   }
 

@@ -18,7 +18,7 @@
 <script>
 export default {
   data(){return{
-    loginShow:1,
+    loginShow:0,
   }},  
 }
 </script>

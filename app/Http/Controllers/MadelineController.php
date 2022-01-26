@@ -8,19 +8,19 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 use App\Models\Madeline;
-use App\Models\tAcc;
+use App\Models\TAcc;
 
 class MadelineController extends Controller
 {
   public static function login(Request $request){
 
     //Validate
-    tAcc::phoneValidate($request->phone);
+    TAcc::phoneValidate($request->phone);
 
     $phone = trim($request->phone);
 
     //Check exists
-    $tAcc = tAcc::where('phone', $phone)->first();
+    $tAcc = TAcc::where('phone', $phone)->first();
 
     if($tAcc && $tAcc->owner_id != Auth::user()->id) return 9;
 
@@ -33,7 +33,7 @@ class MadelineController extends Controller
     if($login == "already log in"){
       //Create account if doesnt exists
       if(!$tAcc){
-        tAcc::createFroLoginInfo($madeline->getLoginInfo());
+        TAcc::createFroLoginInfo($madeline->getLoginInfo());
       }
       return 5;
     } 
@@ -54,10 +54,10 @@ class MadelineController extends Controller
     if($sendCode === 'already log in') $sendCode = true;
     if($sendCode){
 
-      $tAcc = tAcc::where('phone', $phone)->first();
+      $tAcc = TAcc::where('phone', $phone)->first();
       if(!$tAcc){
         $madeline->getSelf();
-        tAcc::createFroLoginInfo($madeline->getLoginInfo());
+        TAcc::createFroLoginInfo($madeline->getLoginInfo());
       }
 
       tAcc::updateLoginTime($phone);

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
-class tAcc extends Model
+class TAcc extends Model
 {
   use HasFactory;
 
@@ -59,7 +59,7 @@ class tAcc extends Model
     }
 
     //Create account
-    $tAcc = new tAcc;
+    $tAcc = new TAcc;
     $tAcc->owner_id = Auth::user()->id;
     $tAcc->name = isset($loginInfo->first_name) ? $loginInfo->first_name : "none";
     $tAcc->phone = $phone;
