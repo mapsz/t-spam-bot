@@ -20,7 +20,7 @@ Route::get('/test', function () {
 }
 
 {//Crone
-  Route::get('/do/actual', [SpamController::class, 'doActual']);
+  // Route::get('/do/actual', [SpamController::class, 'doActual']);
   // Route::get('/do/forward', [SpamController::class, 'doForward']);
 }
 
