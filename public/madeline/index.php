@@ -15,6 +15,7 @@ $get = decrypt($_GET['enc']);
   if(!isset($get['work'])){echo 'no work';exit;}
   //Login
   if(!isset($get["login"])){echo "no login";exit;}
+  $get["login"] = trim($get["login"]);
   if(strpos($get["login"], '+') === false) $get["login"] = '+'.$get["login"];
 }
 

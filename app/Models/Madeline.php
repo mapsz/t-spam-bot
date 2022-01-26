@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Crypt;
 
+use App\Models\JugeLogs;
+use App\Models\tAcc;
+
 class Madeline extends Model
 {
   use HasFactory;
@@ -96,26 +99,43 @@ class Madeline extends Model
 
   public function getSelf(){
     $self = $this->fetch('getSelf');
-    if($self) $this->setLoginInfo($self);
+    if($self){
+      $this->setLoginInfo($self);
+      return $self;
+    } 
     
     return false;
   }
 
   public function checkLogin(){
     $self = $this->getSelf();
-    if(!$self) return false;
-    if(isset($self->_) && $self->_ == 'user') return true;
+
+    if(!$self){
+      tAcc::setNotLogin($this->getLogin());
+      return false;
+    }
+
+    if(isset($self->_) && $self->_ == 'user'){
+      tAcc::updateLoginTime($this->getLogin());
+      return true;
+    } 
+
+    return false;
   }
 
   public function login(){
 
     if($this->checkLogin()) return 'already log in';
-
+    
     $result = $this->fetch('phoneLogin');
+    
+    if(gettype($result) == 'string' && strpos($result, "FLOOD_WAIT_X (420)") !== false){
+      return 'flood';
+    }
 
     //Catch errors
     if(!isset($result->_)){
-      // log @@@
+      JugeLogs::log(101, $result);
       return false;
     }
 
@@ -123,7 +143,7 @@ class Madeline extends Model
       return 'need code';
     }
     
-    // log @@@
+    JugeLogs::log(102, $result);
     return false;
 
   }
@@ -136,7 +156,7 @@ class Madeline extends Model
 
     //Catch errors
     if(!isset($result) || !$result){
-      // log @@@
+      JugeLogs::log(103, $result);
       return false;
     }
 
@@ -145,8 +165,6 @@ class Madeline extends Model
       //Try relog
       if(!$relog){
         $login = $this->login();
-        dump('relog ');
-        dump($login);
         if($login == 'need code'){
           return $this->loginSendCode($code, true);
         }
@@ -158,7 +176,7 @@ class Madeline extends Model
     }
 
     if(gettype($result) == 'string' && strpos($result, "The provided phone code is invalid") !== false){
-      return "Bad code!";
+      return "bad code";
     }
 
 
@@ -166,40 +184,8 @@ class Madeline extends Model
       return true;
     }
 
-    // log @@@
+    JugeLogs::log(104, $result);
     return false;
-    
-
-    dd($result);
-
-
-
-
-
-
-
-    $url = self::getUrl();
-    $params = [
-      'work' => 'login', 
-      'login' => $login,
-      'type' => 'code',
-      'code' => $code,
-    ];
-
-    $request = Http::get($url, $params);
-    $response = (string) $request->getBody();
-
-    $result = self::resultDecode($response);
-
-    if($result == 'already log in') return 1;
-
-    dd($response);
-
-    $result = json_decode($result);
-
-    if(!$result) return 0;
-
-    dd($result);
 
   }
 

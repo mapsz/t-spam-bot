@@ -17,9 +17,20 @@
         </div>
 
         <!-- Already login -->
-        <div v-if="alreadyLogin" class="mt-3">
+        <div v-if="alreadyLoginShow" class="mt-3">
           <p><b>Номер уже залогинен</b></p>        
           <iframe src="https://giphy.com/embed/5zsa1yJd15mWMIA0wB" width="300" height="300" frameBorder="0" class="giphy-embed" allowFullScreen style="max-width:100%"></iframe>
+        </div>
+
+        <!-- Flood -->
+        <div v-if="floodShow" class="mt-3">
+          <p><b>Аккаунт временно забанен</b></p>        
+          <iframe src="https://giphy.com/embed/5zsa1yJd15mWMIA0wB" width="300" height="300" frameBorder="0" class="giphy-embed" allowFullScreen style="max-width:100%"></iframe>
+        </div>
+
+        <!-- Exists -->
+        <div v-if="accounExistsShow" class="mt-3">
+          <p><b>Этот номер кем-то занят</b></p>        
         </div>
 
       </div>
@@ -30,6 +41,12 @@
         <div class="login-phone-form">
           <!-- Number input -->
           <juge-form :inputs="[{'name':'code', 'caption':'Код'}]" :errors="errors" :button="'Подтвердить'" @submit="sendCode" />
+
+          
+          <!-- Bad code -->
+          <div v-if="badCodeShow" class="mt-3">
+            <p><b>Не верный код</b></p>        
+          </div>
         </div>
       </div>
 
@@ -42,15 +59,20 @@
 export default {
 data(){return{
   errors:[],
-  alreadyLogin:false,
+  floodShow:false,
+  accounExistsShow:false,
+  alreadyLoginShow:false,
   sendCodeShow:false,
+  badCodeShow:false,
   phone:false,
 }},
 methods:{
   async sendPhone(data){
     this.errors = [];
-    this.alreadyLogin = false;
+    this.alreadyLoginShow = false;
     this.sendCodeShow = false;
+    this.floodShow = false;
+    this.accounExistsShow = false;
     this.phone = data.phone;
 
     let r = await ax.fetch('/account/login', {'phone':data.phone}, 'post');
@@ -58,12 +80,20 @@ methods:{
     if(!r){if(ax.lastResponse.status == 422){this.errors = ax.lastResponse.data.errors;return;}}
 
     if(r == 5){
-      this.alreadyLogin = true;
+      this.alreadyLoginShow = true;
       return false;
     }
 
     if(r == 4){
       this.sendCodeShow = true;
+      return false;
+    }
+    if(r == 3){
+      this.floodShow = true;
+      return false;
+    }
+    if(r == 9){
+      this.accounExistsShow = true;
       return false;
     }
     
@@ -72,7 +102,20 @@ methods:{
 
   async sendCode(data){
 
+    this.badCodeShow = false;
+
     let r = await ax.fetch('/send/code', {'phone':this.phone, 'code':data.code}, 'post');
+
+    
+    if(r == 8){
+      this.badCodeShow = true;
+      return false;
+    }
+    
+    if(r == 1){
+      Vue.toasted.show("Успех! 🐸",{duration:5000,type:'success',position:'bottom-right'});
+      location.reload();
+    }
 
     console.log(r);
 
