@@ -16,11 +16,26 @@ class MadelineController extends Controller
     //Validate
     tAcc::phoneValidate($request->phone);
 
-    //Try login
-    $login = Madeline::login($request->phone);
+    //Check exists
+    $tAcc = tAcc::where('phone', $request->phone)->first();
 
-    
-    if($login == "already log in") return 5;
+    if($tAcc) dd('exists!');
+
+
+    //Try login
+    $madeline = new Madeline($request->phone);
+    $login = $madeline->login();
+
+    //Already login
+    if($login == "already log in"){
+      //Create account if doesnt exists
+      if(!$tAcc){
+        $loginInfo = $madeline->getLoginInfo();
+
+        dd($loginInfo);
+      }
+      return 5;
+    } 
     if($login == "need code") return 4;
 
     return 0;
@@ -28,7 +43,8 @@ class MadelineController extends Controller
 
   public static function sendCode(Request $request){
 
-    $sendCode = Madeline::loginSendCode($request->phone, $request->code);
+    $madeline = new Madeline($request->phone);
+    $madeline->loginSendCode($request->code);
 
 
     

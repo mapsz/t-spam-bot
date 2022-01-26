@@ -8,14 +8,20 @@ require __DIR__ . '/vendor/autoload.php';
 $libFolder = __DIR__ . "/lib/";
 
 //Decrypt
-$params = decrypt($_GET['enc']);
+$get = decrypt($_GET['enc']);
 
 {//Validator
   //Work
-  if(!isset($params['work'])){echo 'no work';exit;}
+  if(!isset($get['work'])){echo 'no work';exit;}
   //Login
-  if(!isset($params["login"])){echo "no login";exit;}
-  if(strpos($params["login"], '+') === false) $params["login"] = '+'.$params["login"];
+  if(!isset($get["login"])){echo "no login";exit;}
+  if(strpos($get["login"], '+') === false) $get["login"] = '+'.$get["login"];
+}
+
+{//Data
+  $work = $get['work'];
+  $login = $get['login'];
+  $params = (array) $get['params'];
 }
 
 {//Setup settings/session
@@ -26,31 +32,45 @@ $params = decrypt($_GET['enc']);
   $settings->setApiHash("f94fe34d1d0d5d968955508f3b91b3c4");
     
   //Setup session
-  $session = __DIR__ . "/sessions/" . $params["login"] . ".madeline";
+  $session = __DIR__ . "/sessions/" . $login . ".madeline";
 }
 
-echo 'Work - ' . $params['work'] . "\n";
+echo 'Work - ' . $work . "\n";
 
 //Start/continue session
 $MadelineProto = new \danog\MadelineProto\API($session, $settings);
 $MadelineProto->async(false);
 
-$work = $params['work'];
-
-
-$update = false;
+$update = null;
+$fail = false;
 try {
-  $update = $MadelineProto->$work($params['login']);
-} catch (\danog\MadelineProto\Exception $e) {
-  $eString = (string) $e;
-  var_dump($eString);
+
+  switch ($work) {
+    case 'phoneLogin':
+      $update = $MadelineProto->phoneLogin($login);
+    break;
+    //Single parameter
+    case 'completePhoneLogin':
+      $update = $MadelineProto->$work($params['code']);
+    break;    
+    default:
+      $update = $MadelineProto->$work($params);
+    break;
+  }
+
+
+} catch (Exception $e) {
+  $fail = true;
+  $update = (string) $e;
 }
+
+echo "\n\nWork DONE " . ($fail ? 'fail' : 'success') . "\n";
+
+if($fail) fail($update);
 
 done($update);
 
-echo 'Work DONE';
 
-exit;
 
 
 //Do work
@@ -85,6 +105,11 @@ switch ($_GET['work']) {
 function done($text){
   if(gettype($text) == 'object' || gettype($text) == 'array') $text = json_encode($text);
   echo "\n" . '{"result":1,"text":`'.$text.'`}';
+  exit;
+}
+function fail($text){
+  if(gettype($text) == 'object' || gettype($text) == 'array') $text = json_encode($text);
+  echo "\n" . '{"result":0,"text":`'.$text.'`}';
   exit;
 }
 

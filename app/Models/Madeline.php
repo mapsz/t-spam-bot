@@ -11,14 +11,19 @@ class Madeline extends Model
 {
   use HasFactory;
 
+  private $debug = false;
   private $login;
+  private $loginInfo;
   private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
 
 
   private static function getUrl(){return getenv('APP_URL') . 'madeline/';}
+  private function setLoginInfo($loginInfo){return $this->loginInfo = $loginInfo;}
+  public function getLoginInfo(){return $this->loginInfo;}
   private function setLogin($login){return $this->login = $login;}
   private function getLogin(){return $this->login;}
-  private function getCryptKey(){return $this->cryptKey;}
+  private function getCryptKey(){return $this->cryptKey;}  
+  private function getDebug(){return $this->debug;}
   
   public function __construct($login) {
     $this->setLogin($login);
@@ -46,7 +51,7 @@ class Madeline extends Model
     return $cipher;
   }
   
-  private function decrypt(string $encrypted): string{
+  public function decrypt(string $encrypted): string{
     $key = $this->getCryptKey();
 
     $decoded = base64_decode($encrypted);
@@ -68,42 +73,110 @@ class Madeline extends Model
 
   private function fetch($work, $params=false){
 
-    if(!$params) $params = [];
-
-    $params['work'] = $work;
-    $params['login'] = $this->getLogin();
+    $data['work'] = $work;
+    $data['login'] = $this->getLogin();
+    $data['params'] = $params;
     
     //Encrypt params
-    $encrypt = $this->encrypt($params);
+    $encrypt = $this->encrypt($data);
 
     //Fetch
     $request = Http::get(self::getUrl(), ['enc' => $encrypt]);
     $response = (string) $request->getBody();
     $result = self::resultDecode($response);
 
+    //Debug
+    if($this->getDebug()){
+      dump($response);
+    }
+
     return $result;
 
   }
 
+  public function getSelf(){
+    $self = $this->fetch('getSelf');
+    if($self) $this->setLoginInfo($self);
+    
+    return false;
+  }
+
+  public function checkLogin(){
+    $self = $this->getSelf();
+    if(!$self) return false;
+    if(isset($self->_) && $self->_ == 'user') return true;
+  }
+
   public function login(){
+
+    if($this->checkLogin()) return 'already log in';
 
     $result = $this->fetch('phoneLogin');
 
-    dd($result);
+    //Catch errors
+    if(!isset($result->_)){
+      // log @@@
+      return false;
+    }
 
-    // $result = self::resultDecode($response);
+    if($result->_ == 'auth.sentCode'){
+      return 'need code';
+    }
+    
+    // log @@@
+    return false;
 
-    // if($result == 'need code'){
-    //   return 'need code';
-    // }
-    // if($result == 'already log in'){
-    //   return 'already log in';
-    // }
-
-    // return $response;
   }
 
-  public static function loginSendCode($login, $code){
+  public function loginSendCode($code, $relog = false){
+
+    if($this->checkLogin()) return 'already log in';
+
+    $result = $this->fetch('completePhoneLogin', ['code' => $code]);
+
+    //Catch errors
+    if(!isset($result) || !$result){
+      // log @@@
+      return false;
+    }
+
+    if(gettype($result) == 'string' && strpos($result, "I'm not waiting for the code!") !== false){
+
+      //Try relog
+      if(!$relog){
+        $login = $this->login();
+        dump('relog ');
+        dump($login);
+        if($login == 'need code'){
+          return $this->loginSendCode($code, true);
+        }
+      }
+      
+
+
+      return "I'm not waiting for the code!";
+    }
+
+    if(gettype($result) == 'string' && strpos($result, "The provided phone code is invalid") !== false){
+      return "Bad code!";
+    }
+
+
+    if(isset($result->_) && $result->_ == "auth.authorization" && isset($result->user)){
+      return true;
+    }
+
+    // log @@@
+    return false;
+    
+
+    dd($result);
+
+
+
+
+
+
 
     $url = self::getUrl();
     $params = [
@@ -377,14 +450,17 @@ class Madeline extends Model
   }
   
   public static function resultDecode($response){
+    
+    $response = \str_replace("\n","",$response);
 
     {//Decode response
       $matches = [];
       preg_match(
-        "~{\"result\":1,\"text\":`(.*)`}~",
+        "~{\"result\":.,\"text\":`(.*)`}~",
         $response,
         $matches
       );
+
       if(isset($matches[1])){        
         //Try json decode
         if(json_decode($matches[1])) return json_decode($matches[1]);
