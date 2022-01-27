@@ -131,7 +131,7 @@ class Spam extends Model
     Spam::joinAllChats ($madeline, $acc->phone);
     
     //Send
-    foreach ($acc->spams as $key => $spam) {
+    foreach ($acc->spams as $key => $spam) {     
       self::send($madeline, $spam);
     }
         
