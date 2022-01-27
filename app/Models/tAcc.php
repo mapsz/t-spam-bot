@@ -74,17 +74,46 @@ class TAcc extends Model
     Validator::make(['valid' => $valid], ['valid' => 'required|accepted'], ['valid.accepted' => 'Аккаунт должен быть подобного формата +77559874422'])->validate();    
   }
 
-
   public static function jugeGet($request = []) {
+
+    if((isset($request['forSpam']) && $request['forSpam'])){
+      $request['first'] = true;
+    }
+
     //Model
     $query = new self;
   
     {//With
-      //
+      //Spams
+      if((isset($request['spams']) && $request['spams'])){
+        $query = $query->with('spams');
+      } 
+
+      //Active spams
+      if((isset($request['forSpam']) && $request['forSpam'])){
+        $query = $query->with(['spams' => function($q){
+          $q->where('status', 1);
+        }]);
+      }
     }
   
     {//Where
+      //Juge searches
       $query = JugeCRUD::whereSearches($query,$request);
+
+      //Phone
+      if(isset($request['phone']) && $request['phone']){
+        $query = $query->where('phone', $request['phone']);
+      }
+
+      //Active spams
+      if(isset($request['forSpam']) && $request['forSpam']){
+        $query = $query->whereHas('spams', function($q){
+          $q->where('status',1);
+        });
+
+        $query = $query->whereNull('work_at');
+      } 
     }
   
     //Order by
@@ -94,7 +123,7 @@ class TAcc extends Model
     $data = JugeCRUD::get($query,$request);
   
     //Single
-    if(isset($request['id']) && isset(data[0])){$data = $data[0];}
+    if((isset($request['first']) || isset($request['id'])) && isset($data[0])){$data = $data[0];}
   
     //Return
     return $data;
@@ -102,5 +131,10 @@ class TAcc extends Model
 
   public function jugeGetKeys()         {return $this->keys;} 
 
+
+  //Relations
+  public function spams(){
+    return $this->hasMany('App\Models\Spam', 't_acc_phone', 'phone');
+  }   
 
 }

@@ -14,6 +14,7 @@ class JugeLogs extends Model
   public static function log($code, $body = ""){
 
     if(gettype($body) == 'object' || gettype($body) == 'array') $body = json_encode($body);
+    if($body == null) $body = 'null';
 
     $log = new JugeLogs;
     $log->code = $code;

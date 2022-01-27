@@ -109,48 +109,53 @@ class Spam extends Model
 
   public static function doActual(){
 
-    $spams = self::getActual();
+    dump('Do actual');
 
-    $joinChatsAccounts = [];
-    foreach ($spams as $key => $spam) {
-      
-      //Join Channel
-      if(array_search($spam->t_acc_phone, $joinChatsAccounts) === false){
-        Spam::joinAllChats ($spam->t_acc_phone);
-        array_push($joinChatsAccounts, $spam->t_acc_phone);
-      }
-            
-      //Send
-      self::send($spam);
+    $acc = TAcc::jugeGet(['forSpam' => 1]);
+
+    //Exit if no actual
+    if(!isset($acc->spams)){
+      dump('no actual');
+      exit;
     }
-
-  }
-
-  public static function getActual(){
-
-    $spams = Spam::where('status', '1')->get();
-
-    $actualSpams = [];
-    foreach ($spams as $key => $spam) {
-      if($spam->sent_at == NULL || \Carbon\Carbon::parse($spam->sent_at)->add($spam->delay,'minutes') < now()) array_push($actualSpams, $spam);
+    
+    {//Set start work
+      $acc->work_at = now();
+      $acc->save();
     }
-
-    return $actualSpams;
-
-  }
-
-  public static function joinAllChats($login){
 
     //Madeline
-    $madeline = new Madeline($login);
+    $madeline = new Madeline($acc->phone);
+          
+    //Join Channels
+    Spam::joinAllChats ($madeline, $acc->phone);
+    
+    //Send
+    foreach ($acc->spams as $key => $spam) {
+      self::send($madeline, $spam);
+    }
+        
+    {//Set work done
+      $acc->work_at = null;
+      $acc->save();
+    }
+
+    dump('actual done');
+
+  }
+
+  public static function joinAllChats($madeline, $login){
     
     //Get Chats
+    dump('Get chats ' . $login);
     $chats = $madeline->getAllChats();
 
     $spams = Spam::where('status', '1')->where('t_acc_phone', $login)->get();
 
     $joined = 0;
     foreach ($spams as $key => $spam) {
+
+      dump('Join ' . $spam->id);
 
       if($joined > 4){
         dump('to many joins');
@@ -182,14 +187,14 @@ class Spam extends Model
     
   }
 
-  public static function send($spam){
 
-    $madeline = new Madeline($spam->t_acc_phone); //@@@ 
+  public static function send($madeline, $spam){
+
+    dump('send ' . $spam->t_acc_phone . " - " . $spam->id);
 
     $madeline->sendMessage($spam->peer, $spam->text);
 
     $spam->sent_at = now();
-
     $spam->save();
 
   }

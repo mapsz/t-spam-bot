@@ -4,9 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-
-
-class AddLastLoginAtToTAccsTable extends Migration
+class AddWorkAtToTAccsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -16,7 +14,7 @@ class AddLastLoginAtToTAccsTable extends Migration
     public function up()
     {
         Schema::table('t_accs', function (Blueprint $table) {
-            $table->timestamp('last_login_at')->nullable();
+            $table->timestamp('work_at')->nullable();
         });
     }
 
@@ -28,7 +26,7 @@ class AddLastLoginAtToTAccsTable extends Migration
     public function down()
     {
         Schema::table('t_accs', function (Blueprint $table) {
-            $table->dropColumn('last_login_at');
+            $table->dropColumn('work_at');
         });
     }
 }

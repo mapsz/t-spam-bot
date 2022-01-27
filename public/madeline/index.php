@@ -66,8 +66,7 @@ try {
         # code...
       break;      
       default:
-        if($params == null)   $update = $MadelineProto->$work1->$work2();
-        else                  $update = $MadelineProto->$work1->$work2($params);
+        $update = $params == null ? $MadelineProto->$work1->$work2() : $MadelineProto->$work1->$work2($params);
       break;
     }
 
@@ -82,8 +81,7 @@ try {
         $update = $MadelineProto->$work($params['code']);
       break;    
       default:
-        if($params == null)   $update = $MadelineProto->$work();
-        else                  $update = $MadelineProto->$work($params);
+        $update = $params == null ? $MadelineProto->$work() : $MadelineProto->$work($params);
       break;
     }
 
