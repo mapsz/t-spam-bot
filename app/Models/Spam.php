@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 use App\Models\Madeline;
+use App\Models\TAcc;
 
 class Spam extends Model
 {
@@ -111,7 +112,7 @@ class Spam extends Model
 
     dump('Do actual');
 
-    $acc = TAcc::jugeGet(['forSpam' => 1]);
+    $acc = TAcc::getWithActualSpams();
 
     //Exit if no actual
     if(!isset($acc->spams)){
@@ -127,6 +128,16 @@ class Spam extends Model
     //Madeline
     $madeline = new Madeline($acc->phone);
           
+    //Check login
+    if(!$madeline->checkLogin()){        
+      {//Set work done
+        $acc->work_at = null;
+        $acc->save();
+      }
+      dump('not login');
+      exit;
+    }
+
     //Join Channels
     Spam::joinAllChats ($madeline, $acc->phone);
     
@@ -150,6 +161,11 @@ class Spam extends Model
     dump('Get chats ' . $login);
     $chats = $madeline->getAllChats();
 
+    if(!$chats){
+      dump('join fail');
+      return false;
+    }
+
     $spams = Spam::where('status', '1')->where('t_acc_phone', $login)->get();
 
     $joined = 0;
@@ -157,7 +173,7 @@ class Spam extends Model
 
       dump('Join ' . $spam->id);
 
-      if($joined > 4){
+      if($joined > 1){
         dump('to many joins');
         return;        
       }
@@ -171,14 +187,14 @@ class Spam extends Model
       foreach ($chats as $key => $chat) {
         if(isset($chat->username) && $chat->username == $peer){
           $join = false;
+          dump('alreay joined');
           break;
         } 
-      }
-
-      dump('join - ' . $peer);
+      }     
 
       //Join
       if($join){
+        dump('join - ' . $peer);
         dump($madeline->joinChannel($spam->peer));
         $joined++;
       }
@@ -192,7 +208,7 @@ class Spam extends Model
 
     dump('send ' . $spam->t_acc_phone . " - " . $spam->id);
 
-    $madeline->sendMessage($spam->peer, $spam->text);
+    dump($madeline->sendMessage($spam->peer, $spam->text));
 
     $spam->sent_at = now();
     $spam->save();

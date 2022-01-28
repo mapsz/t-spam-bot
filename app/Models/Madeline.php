@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Crypt;
 
 use App\Models\JugeLogs;
 use App\Models\TAcc;
+use App\Models\Meta;
 
 class Madeline extends Model
 {
@@ -102,7 +103,7 @@ class Madeline extends Model
 
   public function getSelf(){
     $self = $this->_query('getSelf');
-    if($self){
+    if(isset($self->_) && $self->_ == 'user'){
       $this->setLoginInfo($self);
       return $self;
     } 
@@ -148,6 +149,13 @@ class Madeline extends Model
     
     JugeLogs::log(102, $result);
     return false;
+
+  }
+
+  public function resetAuthorization($hash){
+    
+    return $this->_query('account.resetAuthorization', ['hash' => $hash]);
+    
 
   }
 
@@ -211,11 +219,34 @@ class Madeline extends Model
     if(isset($result->chats) && isset($result->chats[0]) && isset($result->_) && $result->_ == 'updates'){
       return true;
     }
+
+    if($result && gettype($result) == 'string'){
+      $matches = [];
+      preg_match(
+        "~Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
+        $result,
+        $matches
+      );
+
+      if(isset($matches[1]) && $matches[1]){
+        $this->setJoinFlood($matches[1]);
+        return false;
+      }
+    }
     
     //Log
     JugeLogs::log(116, $result);
     
     return false;
+  }
+
+  private static function setJoinFlood($flood){
+    $meta = new Meta;
+    $meta->metable_id = $this->getLogin();
+    $meta->metable_type = "App\Models\TAcc";
+    $meta->name = "JoinChannelFlood";
+    $meta->value = now()->timestamp + $flood;
+    return $meta->save();
   }
   
   public function getAllChats(){
@@ -232,8 +263,8 @@ class Madeline extends Model
       !is_array($chats->chats) || 
       !isset($chats->chats[0])
     ){
-      JugeLogs::log(117, $result);
-      return [];
+      JugeLogs::log(117, $chats);
+      return false;
     } 
 
     return $chats->chats;
@@ -439,4 +470,9 @@ class Madeline extends Model
     
     return false;
   }
+
+  public function metas(){
+    return $this->morphMany(Meta::class, 'metable');
+  }  
+
 }

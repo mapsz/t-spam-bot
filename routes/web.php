@@ -6,11 +6,20 @@ use App\Http\Controllers\SpamController;
 use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/test', function () {
-  dd(
+  $a = 'Telegram returned an RPC error: FLOOD_WAIT_X (420) (FLOOD_WAIT_52860), caused by';
 
-    json_decode('{"result":1,"text":{"_":"auth.authorization","setup_password_required":false,"user":{"_":"user","self":true,"contact":false,"mutual_contact":false,"deleted":false,"bot":false,"bot_chat_history":false,"bot_nochats":false,"verified":false,"restricted":false,"min":false,"bot_inline_geo":false,"support":false,"scam":false,"apply_min_photo":true,"fake":false,"id":517183883,"access_hash":-7849556256254681675,"first_name":"\u042e\u0440\u0430","username":"jurijsgergelaba","phone":"37128885282","photo":{"_":"userProfilePhoto","has_video":false,"photo_id":2221287863959529390,"stripped_thumb":{"_":"bytes","bytes":"AQgIJJmVNvmHbnGMjGKKKKLAfw=="},"dc_id":4},"status":{"_":"userStatusOffline","was_online":1642854814}}}}')
-    ->text
+
+  $b = "~{\"result\":.,\"text\":`(.*)`}~";
+
+  $matches = [];
+  preg_match(
+    "~Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
+    $a,
+    $matches
   );
+
+  dd($matches);
+
 });
 
 

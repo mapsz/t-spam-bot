@@ -103,35 +103,6 @@ done($update);
 
 
 
-//Do work
-switch ($_GET['work']) {
-  case 'getInfo':
-  case 'getAllChats':
-  case 'getFullDialogs':
-  case 'testMessage':
-    require $libFolder . 'lib.madeline.php';
-    break;
-  case 'login':
-    require $libFolder . 'login.madeline.php';
-    break;
-  case 'joinChannel':
-  case 'leaveChannel':
-    require $libFolder . 'channels.madeline.php';
-    break;
-  case 'sendMessage':
-  case 'getHistory':
-  case 'readHistory':
-  case 'forwardMessages':
-    require $libFolder . 'messages.madeline.php';
-    break;
-  case 'test':
-    done( $MadelineProto->channels->getChannels(['_' => 'chatId', 'id' => 778310890]) );
-  break;
-  default:
-    echo 'bad work';
-}
-
-
 function done($text){
   if(gettype($text) == 'object' || gettype($text) == 'array') $text = json_encode($text);
   echo "\n" . '{"result":1,"text":`'.$text.'`}';

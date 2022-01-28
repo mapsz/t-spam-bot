@@ -74,11 +74,51 @@ class TAcc extends Model
     Validator::make(['valid' => $valid], ['valid' => 'required|accepted'], ['valid.accepted' => 'Аккаунт должен быть подобного формата +77559874422'])->validate();    
   }
 
-  public static function jugeGet($request = []) {
+  public static function getWithActualSpams(){
+    //Model
+    $query = new self;
 
-    if((isset($request['forSpam']) && $request['forSpam'])){
-      $request['first'] = true;
+    $query = $query->with(['spams' => function($q){
+      $q->where('status', 1);
+    }]);
+
+    $query = $query->whereHas('spams', function($q){
+      $q->where('status',1);
+    });
+
+    $query = $query->whereNull('work_at');
+  
+    $query = $query->orderBy('status', 'desc');
+
+    $data = $query->get();
+
+    //Remove not actual spams
+    foreach ($data as $k => $row) {
+      $gotActualSpam = false;
+      $actualSpams = [];
+      foreach ($row->spams as $kspam => $spam) {
+        if(\Carbon\Carbon::parse($spam->sent_at)->add($spam->delay,'minutes') < now()){
+          array_push($actualSpams, $spam->id);
+        }
+      }
+                
+      if(count($actualSpams) > 0){
+        $data[$k]->actualSpams = $actualSpams;
+        $acc = $data[$k]->id;
+        $gotActualSpam = true;
+        break;
+      }
     }
+     
+    if(!$gotActualSpam) return false;
+    
+    $data = self::jugeGet(['id' => $acc, 'spam_ids' => $actualSpams]);
+
+    return $data;
+
+  }
+
+  public static function jugeGet($request = []) {
 
     //Model
     $query = new self;
@@ -88,6 +128,14 @@ class TAcc extends Model
       if((isset($request['spams']) && $request['spams'])){
         $query = $query->with('spams');
       } 
+
+      //Spam ids
+      if((isset($request['spam_ids']) && is_array($request['spam_ids']))){
+        $spamIds = $request['spam_ids'];
+        $query = $query->with(['spams' => function($q)use($spamIds){
+          $q->whereIn('id', $spamIds);
+        }]);
+      }
 
       //Active spams
       if((isset($request['forSpam']) && $request['forSpam'])){
@@ -121,9 +169,17 @@ class TAcc extends Model
   
     //Get
     $data = JugeCRUD::get($query,$request);
+
+    
+    {//After query work
+      foreach ($data as $k => $row) {
+       // 
+      }
+    }
   
     //Single
-    if((isset($request['first']) || isset($request['id'])) && isset($data[0])){$data = $data[0];}
+    if(isset($request['id']) && isset($data[0])){$data = $data[0];}
+
   
     //Return
     return $data;
