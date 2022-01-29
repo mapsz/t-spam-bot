@@ -210,27 +210,32 @@ class Madeline extends Model
 
   public function joinChannel($channel){
     $result = $this->_query('channels.joinChannel', ['channel' => $channel]);
-    
-    if(gettype($result) == 'string' && strpos($result, "The provided peer id is invalid") !== false){
-      $this->setError('The provided peer id is invalid');
-      return false;
-    }
 
+    //Success
     if(isset($result->chats) && isset($result->chats[0]) && isset($result->_) && $result->_ == 'updates'){
       return true;
     }
-
-    if($result && gettype($result) == 'string'){
-      $matches = [];
-      preg_match(
-        "~Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
-        $result,
-        $matches
-      );
-
-      if(isset($matches[1]) && $matches[1]){
-        $this->setJoinFlood($matches[1]);
+    
+    {//Catch errors
+      //Bad peer
+      if(gettype($result) == 'string' && strpos($result, "The provided peer id is invalid") !== false){
+        $this->setError('The provided peer id is invalid');
         return false;
+      }
+
+      //Set flood
+      if($result && gettype($result) == 'string'){
+        $matches = [];
+        preg_match(
+          "~Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
+          $result,
+          $matches
+        );
+
+        if(isset($matches[1]) && $matches[1]){
+          $this->setJoinFlood($matches[1]);
+          return false;
+        }
       }
     }
     
