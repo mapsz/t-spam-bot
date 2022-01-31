@@ -6,19 +6,7 @@ use App\Http\Controllers\SpamController;
 use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/test', function () {
-  $a = 'Telegram returned an RPC error: FLOOD_WAIT_X (420) (FLOOD_WAIT_52860), caused by';
-
-
-  $b = "~{\"result\":.,\"text\":`(.*)`}~";
-
-  $matches = [];
-  preg_match(
-    "~Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
-    $a,
-    $matches
-  );
-
-  dd($matches);
+  App\Models\Spam::doJoins();
 
 });
 
@@ -29,7 +17,13 @@ Route::get('/test', function () {
 }
 
 {//Crone
-  Route::get('/do/actual', [SpamController::class, 'doActual']);
+  //
+  Route::get('/remove/works', function(){App\Models\Spam::removeWorks();});
+
+  Route::get('/do/joins', function(){App\Models\Spam::doJoins(true);});
+  
+  Route::get('/do/actual', function(){App\Models\Spam::doSends();});
+
   // Route::get('/do/forward', [SpamController::class, 'doForward']);
 }
 

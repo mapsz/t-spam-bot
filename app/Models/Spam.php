@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Models\Madeline;
 use App\Models\TAcc;
+use App\Models\Meta;
+use Carbon\Carbon;
 
 class Spam extends Model
 {
@@ -64,6 +66,48 @@ class Spam extends Model
     ],
   ];
 
+  public static function removeWorks(){
+
+    dump('Remove Works');
+
+    $accs = new TAcc;
+
+    $t = now()->add('-60','minutes');
+    $accs = $accs->where('work_at', '<', $t);
+    $accs = $accs->get();
+    
+    foreach ($accs as $key => $acc) {
+
+      dump($acc->phone);
+
+      //Get work reset
+      $meta = Meta::where([
+        'metable_id' => $acc->id, 
+        'metable_type' => 'App\Models\TAcc', 
+        'name' => 'workReset'
+      ])->first();
+
+      dump($meta);
+
+      if($meta !== null){
+        $meta->value = $meta->value + 1;
+        $meta->save();
+      }else{
+        //Make new work reset
+        $meta = new Meta;
+        $meta->metable_id = $acc->id;
+        $meta->metable_type = 'App\Models\TAcc';
+        $meta->name = 'workReset';
+        $meta->value = 1;
+        $meta->save();
+      }
+
+      $acc->work_at = null;
+      $acc->save();
+    }
+
+    dd('done');
+  }
 
   public static function doForward(){
     $logins = ['+447789122157','+380992416157'];
@@ -108,11 +152,21 @@ class Spam extends Model
     
   }
 
-  public static function doActual(){
+  public static function doSends($recursive = true){
 
     dump('Do actual');
 
     $acc = TAcc::getWithActualSpams();
+
+    //Exit if no phone
+    if(!isset($acc->phone)){
+      dump($acc);
+      dump('no phone');
+      dump('no actual?');
+      exit;
+    }
+
+    dump($acc->phone);
 
     //Exit if no actual
     if(!isset($acc->spams)){
@@ -129,7 +183,7 @@ class Spam extends Model
     $madeline = new Madeline($acc->phone);
           
     //Check login
-    if(!$madeline->checkLogin()){        
+    if(!$madeline->checkLogin()){
       {//Set work done
         $acc->work_at = null;
         $acc->save();
@@ -137,12 +191,9 @@ class Spam extends Model
       dump('not login');
       exit;
     }
-
-    //Join Channels
-    Spam::joinAllChats ($madeline, $acc->phone);
     
     //Send
-    foreach ($acc->spams as $key => $spam) {     
+    foreach ($acc->spams as $key => $spam) {
       self::send($madeline, $spam);
     }
         
@@ -153,6 +204,244 @@ class Spam extends Model
 
     dump('actual done');
 
+    if($recursive) Self::doSends();
+
+  }
+
+  public static function doJoins($mass = true, $recursive = true){
+
+    {//Set joins
+      if($mass){
+        //Set joins
+        self::setMassJoins();
+      }
+    }
+
+    {// Get tAcc with spams
+      $accQuery = new TAcc;
+      
+      $t = now()->add('-5','minutes');
+      $accQuery = $accQuery->where(function($q) use ($t){
+        $q = $q->whereDoesntHave('metas', function($q1){
+          $q1->where('name', 'doJoins');
+        });
+        $q = $q->orWhereHas('metas', function($q1) use ($t){
+          $q1->where('name', 'doJoins')
+             ->where('value', '<', $t);
+        });
+      });
+         
+      $accQuery = $accQuery->with('metas');
+
+      $accQuery = $accQuery->with(['spams' => function($q){
+        $q->whereNull('group_joined_at');
+      }]);
+      $accQuery = $accQuery->whereHas('spams', function($q){
+        $q->whereNull('group_joined_at');
+      });
+      $accQuery = $accQuery->whereNull('work_at');
+  
+      $acc = $accQuery->first();
+    }
+
+    //Check no joins
+    if(!$acc || !isset($acc->id)){
+      dump('no joins');
+      return false;
+    }
+    
+    TAcc::startWork($acc);
+
+    dump('Start Join ' . $acc->phone);
+    
+    //Madeline
+    $madeline = new Madeline($acc->phone);
+
+    //Set joins
+    $meta = Meta::updateOrCreate(
+      [
+        'metable_id' => $acc->id, 
+        'metable_type' => 'App\Models\TAcc', 
+        'name' => 'doJoins'
+      ],
+      ['value' => now()]
+    );
+
+    //Join
+    $joined = 0;
+    foreach ($acc->spams as $key => $spam) {
+
+      if($joined > 1){
+        dump('to many joins');
+        break;
+      }
+
+      dump('Join ' . $acc->phone . " " . $spam->peer);
+      $didJoin = $madeline->joinChannel($spam->peer);
+      dump($didJoin);
+      if($didJoin){
+        $spam->group_joined_at = now();
+        $spam->save();
+        $joined++;
+      }
+
+    }
+    
+    TAcc::stopWork($acc);
+
+    if($recursive) self::doJoins(false);
+
+    return true;
+
+  }
+
+  public static function setJoins($acc){
+
+    $login = $acc->phone;
+
+    dump('Check Joins ' . $login);
+
+    {//Check Resent Joins
+      $checkJoins = Meta::where([
+          'metable_id' => $acc->id, 
+          'metable_type' => 'App\Models\TAcc', 
+          'name' => 'checkJoins'
+      ]);
+      $checkJoins = $checkJoins->first();
+
+      if(isset($checkJoins->value)){
+        if(Carbon::parse($checkJoins->value)->add('30','minutes')->diffInMinutes(now()) < 30){
+          dump('not now');
+          return false;
+        }
+      }
+    }
+    
+    {//Update Joins
+      dump('Update Joins ');
+      $meta = Meta::updateOrCreate(
+        [
+          'metable_id' => $acc->id, 
+          'metable_type' => 'App\Models\TAcc', 
+          'name' => 'checkJoins'
+        ],
+        ['value' => now()]
+      );
+    }
+         
+    {//Get Spams
+      $spams = Spam::where('t_acc_phone', $login)->get();
+
+      {//Check exists
+        if(!$spams){
+          dump('get chats fail');
+          return false;
+        }
+        if(count($spams) == 0){
+          dump('no chats');
+          return false;
+        }
+      }
+
+    }
+   
+    {//Get Chats
+      dump('Get chats ');
+      $madeline = new Madeline($login);
+      $madelineChats = $madeline->getAllChats();
+      
+      //Check fails
+      if(!$madelineChats || !is_array($madelineChats)){
+        dump($madelineChats);
+        dump('get chats fail');
+        return false;
+      }
+    } 
+        
+    {//Set Joins
+      dump('Set Joins');
+      foreach ($spams as $kSpamChat => $spam) {
+            
+        {//Set joins
+
+          //Trim peer
+          $peer = str_replace('http://t.me/', '', $spam->peer);
+          $peer = str_replace('https://t.me/', '', $peer);
+
+          dump($peer);
+  
+          {//Check already joined
+            dump('Check joined');
+            $joined = false;
+            foreach ($madelineChats as $kMadelineChat => $madelineChat){
+              if( 
+                (isset($madelineChat->username)) && 
+                ($madelineChat->username == $peer)
+              ){
+                $joined = true;
+                break;
+              }
+            }
+          }
+          
+          {//Set join
+            if($joined){
+              dump('Joined ' . $peer . " " . $login);
+              $spam->group_joined_at = now();
+            }else{
+              dump('Not Joined ' . $peer . " " . $login);
+              $spam->group_joined_at = NULL;
+            }
+    
+            $spam->save();
+          }
+        }  
+  
+      }
+    }
+
+    return true;
+
+  }
+
+  public static function setMassJoins(){
+    
+    {//Accs
+      $accQuery = new TAcc;    
+      $accQuery = $accQuery->with('metas');
+      $accQuery = $accQuery->where('status', 1);
+      $accQuery = $accQuery->whereNull('work_at');
+      $accs = $accQuery->get();
+    }
+
+    //Set Accs to set joins
+    $fAcc = false;
+    foreach ($accs as $key => $acc) {
+      $checkJoins = Meta::get($acc->metas, 'checkJoins');
+      if($checkJoins == null){
+        $fAcc = $acc;
+        break;
+      }
+      if(
+        gettype($checkJoins) == 'string' &&
+        Carbon::parse($checkJoins)->add('30','minutes')->diffInMinutes(now()) > 30
+      ){
+        $fAcc = $acc;
+        break;
+      } 
+    }
+
+    if(!$fAcc){
+      dump('No acc to join');
+      return false;
+    } 
+
+    TAcc::startWork($fAcc);
+    self::setJoins($fAcc);
+    TAcc::stopWork($fAcc);
+
+    self::setMassJoins();
+    
   }
 
   public static function joinAllChats($madeline, $login){
@@ -195,14 +484,14 @@ class Spam extends Model
       //Join
       if($join){
         dump('join - ' . $peer);
-        dump($madeline->joinChannel($spam->peer));
-        $joined++;
+        $didJoin = $madeline->joinChannel($spam->peer);
+        dump($didJoin);
+        if($didJoin) $joined++;        
       }
 
     }
     
   }
-
 
   public static function send($madeline, $spam){
 

@@ -16,10 +16,13 @@ class Madeline extends Model
   use HasFactory;
 
   private $debug = false;
+  // private $debug = true;
   private $login;
   private $loginInfo;
   private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
   private $error = false;
+
+  // $a= new Madeline('+37128885282'); $a->joinChannel('asdasdasd');
 
 
   private static function getUrl(){return getenv('APP_URL') . 'madeline/';}
@@ -225,9 +228,10 @@ class Madeline extends Model
 
       //Set flood
       if($result && gettype($result) == 'string'){
+        
         $matches = [];
         preg_match(
-          "~Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
+          "~^Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
           $result,
           $matches
         );
@@ -245,7 +249,7 @@ class Madeline extends Model
     return false;
   }
 
-  private static function setJoinFlood($flood){
+  private function setJoinFlood($flood){
     $meta = new Meta;
     $meta->metable_id = $this->getLogin();
     $meta->metable_type = "App\Models\TAcc";

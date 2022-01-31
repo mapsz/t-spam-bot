@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\Meta;
+
 class TAcc extends Model
 {
   use HasFactory;
@@ -35,6 +37,16 @@ class TAcc extends Model
 
     return $tAcc->save();
 
+  }
+
+  public static function startWork($acc){
+    $acc->work_at = now();
+    return $acc->save();
+  }
+
+  public static function stopWork($acc){
+    $acc->work_at = null;
+    $acc->save();
   }
 
   public static function setNotLogin($phone){
@@ -83,7 +95,8 @@ class TAcc extends Model
     }]);
 
     $query = $query->whereHas('spams', function($q){
-      $q->where('status',1);
+      $q = $q->where('status',1);
+      $q = $q->whereNotNull('group_joined_at');
     });
 
     $query = $query->whereNull('work_at');
@@ -97,7 +110,10 @@ class TAcc extends Model
       $gotActualSpam = false;
       $actualSpams = [];
       foreach ($row->spams as $kspam => $spam) {
-        if(\Carbon\Carbon::parse($spam->sent_at)->add($spam->delay,'minutes') < now()){
+        if(
+          (\Carbon\Carbon::parse($spam->sent_at)->add($spam->delay,'minutes') < now()) ||
+          $spam->sent_at == NULL          
+        ){
           array_push($actualSpams, $spam->id);
         }
       }
@@ -192,5 +208,8 @@ class TAcc extends Model
   public function spams(){
     return $this->hasMany('App\Models\Spam', 't_acc_phone', 'phone');
   }   
+  public function metas(){
+    return $this->morphMany(Meta::class, 'metable');
+  }  
 
 }
