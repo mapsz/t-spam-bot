@@ -60,6 +60,21 @@ class JugeCRUD extends Model
     return $query;
   }
 
+  public static function autoPut($model, $data){
+
+    //Edit
+    foreach ($data as $k => $v) {
+      if($k == 'id') continue;
+      $model->$k = $v;
+    }
+
+    //Save
+    $save = $model->save();
+    if($save) return $model->jugeGet(['id' => $model->id]);
+
+    return false;
+  }
+
   public static function autoPost($model, $data){
 
     //Get
@@ -78,20 +93,8 @@ class JugeCRUD extends Model
     return false;
   }
 
-  public static function autoPut($model, $data){
-
-    //Edit
-    foreach ($data as $k => $v) {
-      if($k == 'id') continue;
-      $model->$k = $v;
-    }
-
-    //Save
-    $save = $model->save();
-    if($save) return $model->jugeGet(['id' => $model->id]);
-
-    return false;
+  public static function autoDelete($model, $id){
+    return ($model::find($id))->delete();
   }
-
 
 }

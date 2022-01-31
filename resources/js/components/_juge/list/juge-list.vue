@@ -92,7 +92,9 @@
       <!-- Edits -->
       <div v-else-if="data.value.type == 'edits'" class="d-flex">
         <!-- Edit -->
-        <span v-if="data.value.edit"><button @click="toEdit=data.item" class="btn btn-warning btn-sm" v-b-modal="'juge-list-edit'">✏️</button></span>
+        <span v-if="data.value.edit" :class="data.value.edit && data.value.delete ? 'mr-2' : ''">
+          <button @click="toEdit=data.item" class="btn btn-warning btn-sm" v-b-modal="'juge-list-edit'">✏️</button>
+        </span>
         <!-- Delete -->        
         <span v-if="data.value.delete"><button @click="toDelete=data.item" class="btn btn-danger btn-sm" v-b-modal="'juge-list-delete'">🗑️</button></span>  
       </div>         
@@ -127,8 +129,7 @@
     <!-- Delete Modal -->
     <b-modal :id="'juge-list-delete'" :title="'Подтвердить удаление 🗑️'" ok-only hide-footer>
       <div>
-        ID: {{toDelete.id}}
-        <!-- <juge-list-delete :model="cKeysModelSingle" :row="toEdit" @editSuccess="$bvModal.hide('juge-list-edit');refreshTable()"/> -->
+        <juge-list-delete :model="cKeysModelSingle" :row="toDelete" @deleteSuccess="$bvModal.hide('juge-list-delete');refreshTable()"/>
       </div>
     </b-modal>
     

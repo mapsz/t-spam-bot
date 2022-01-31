@@ -392,7 +392,7 @@ class jugeVuex {
 
         return row;
       },
-      async doDelete(id){
+      async doDelete({state,commit},id){
         if(!$delete) return 'not allowed';        
         
         //Refresh errors
@@ -406,27 +406,22 @@ class jugeVuex {
           //Catch error
           if(ax.lastResponse.status != undefined){if(ax.lastResponse.status == 422){commit('mErrors',ax.lastResponse.data.errors);}}
           return false;
+        }        
+
+        //Delete local
+        let rows = state.rows;
+        for( var i = 0; i < rows.length; i++){     
+          if (rows[i].id === id) {rows.splice(i, 1);}      
         }
 
-        //Edit local
-        //Single
-        // if(state.row.id != undefined && state.row.id == row.id){
-        //   console.log('single');
-        // }
-        //Multi
-        // if(state.rows.length > 0){
-        //   console.log('multi exists');
-        //   let i = state.rows.findIndex(x => x.id == row.id);
-        //   if(i > -1){
-        //     let edits = state.rows[i].edits;
-        //     row.edits = edits;
-        //     let rows = state.rows;
-        //     rows[i] = row;
-        //     commit('mRows',rows);
-        //   }
-        // }        
+        //Mutate
+        commit('mRows',rows);
 
-        return row;
+        // let rowDeleted = arr.find(x => x.id == id);
+        // console.log(rowDeleted);
+        // commit('mRows', [row].concat(state.rows));
+
+        return true;
 
       }
     }   
