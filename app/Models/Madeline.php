@@ -15,14 +15,14 @@ class Madeline extends Model
 {
   use HasFactory;
 
-  private $debug = false;
-  // private $debug = true;
+  // private $debug = false;
+  private $debug = true;
   private $login;
   private $loginInfo;
   private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
   private $error = false;
 
-  // $a= new Madeline('+37128885282'); $a->joinChannel('asdasdasd');
+  // $a = new Madeline('+6285785641691'); $a->getSelf();
 
 
   private static function getUrl(){return getenv('APP_URL') . 'madeline/';}
@@ -104,12 +104,32 @@ class Madeline extends Model
 
   }
 
-  public function getSelf(){
-    $self = $this->_query('getSelf');
-    if(isset($self->_) && $self->_ == 'user'){
-      $this->setLoginInfo($self);
-      return $self;
+  private function checkBan($result){
+    //Login ban
+    if(
+      gettype($result) == 'string' && 
+      strpos($result, "The current account was banned from telegram due to abuse (401) (USER_DEACTIVATED_BAN)") !== false
+    ){
+      $tAcc = TAcc::where('phone', $this->getLogin())->update(
+        ['status' => -1]
+      );
+      JugeLogs::log(11, 'ban set ' . $this->getLogin());
+      return true;
     } 
+  }
+
+  public function getSelf(){
+    $result = $this->_query('getSelf');
+    if(isset($result->_) && $result->_ == 'user'){
+      $this->setLoginInfo($result);
+      return $result;
+    } 
+
+    {//Catch errors
+      if($this->checkBan($result)) return false;
+    }
+
+    JugeLogs::log(143, $result);
     
     return false;
   }
@@ -214,18 +234,40 @@ class Madeline extends Model
   public function joinChannel($channel){
     $result = $this->_query('channels.joinChannel', ['channel' => $channel]);
 
-    //Success
-    if(isset($result->chats) && isset($result->chats[0]) && isset($result->_) && $result->_ == 'updates'){
-      return true;
+    
+    {//Success
+
+      if(gettype($result) == 'string' && strpos($result, "Telegram returned an RPC error: The user is already in the group (400) (USER_ALREADY_PARTICIPANT),") !== false) return true;
+    
+      if(isset($result->chats) && isset($result->chats[0]) && isset($result->_) && $result->_ == 'updates') return true;
+
     }
     
     {//Catch errors
+
+      //Check ban
+      if($this->checkBan($result)) return false;
+
       //Bad peer
       if(gettype($result) == 'string' && strpos($result, "The provided peer id is invalid") !== false){
         $this->setError('The provided peer id is invalid');
         return false;
       }
 
+      //Peer ban
+      if(gettype($result) == 'string' && strpos($result, "This peer is not present in the internal peer database in") !== false){
+        $this->setError('This peer is not present in the internal peer database in');
+
+        $spam = Spam::where('t_acc_phone', $this->getLogin())->where('peer', $channel)->update(
+          [
+            'status' => -1,
+            'group_joined_at' => NULL,
+          ]
+        );
+
+        return false;
+      }
+      
       //Set flood
       if($result && gettype($result) == 'string'){
         
@@ -237,7 +279,7 @@ class Madeline extends Model
         );
 
         if(isset($matches[1]) && $matches[1]){
-          $this->setJoinFlood($matches[1]);
+          $this->setFlood($matches[1], "JoinChannelFlood");
           return false;
         }
       }
@@ -249,12 +291,12 @@ class Madeline extends Model
     return false;
   }
 
-  private function setJoinFlood($flood){
+  private function setFlood($time, $type){
     $meta = new Meta;
     $meta->metable_id = $this->getLogin();
     $meta->metable_type = "App\Models\TAcc";
-    $meta->name = "JoinChannelFlood";
-    $meta->value = now()->timestamp + $flood;
+    $meta->name = $type;
+    $meta->value = now()->timestamp + $time;
     return $meta->save();
   }
   
@@ -263,14 +305,17 @@ class Madeline extends Model
     //Get chats
     $chats = $this->_query('messages.getAllChats');
 
+  
+    //Check ban
+    if($this->checkBan($chats)) return false;
+
     //Check chats exists 
     if(
       !$chats || 
       !isset($chats->_) || 
       $chats->_ != "messages.chats" || 
       !isset($chats->chats) || 
-      !is_array($chats->chats) || 
-      !isset($chats->chats[0])
+      !is_array($chats->chats)
     ){
       JugeLogs::log(117, $chats);
       return false;
@@ -287,16 +332,98 @@ class Madeline extends Model
     ];
 
     $result = $this->_query('messages.sendMessage', $params);
-
-    if(
-      isset($result->_) && 
-      $result->_ == 'updateShortSentMessage' && 
-      isset($result->request) && 
-      isset($result->request->_) && 
-      $result->request->_ == "messages.sendMessage"
-    ){
-      return true;
+    
+    {//Success
+      {//Short
+        if(
+          isset($result->_) && 
+          $result->_ == 'updateShortSentMessage' && 
+          isset($result->request) && 
+          isset($result->request->_) && 
+          $result->request->_ == "messages.sendMessage"
+        ){
+          return true;
+        }
+      }
+      
+      {//Other
+        if(
+          isset($result->_) &&
+          $result->_ == 'updates' &&
+          isset($result->request) &&
+          isset($result->request->_) &&
+          $result->request->_ == 'messages.sendMessage' &&
+          isset($result->users) &&
+          isset($result->users[0]) &&
+          isset($result->chats) &&
+          isset($result->chats[0])
+        ){return true;}
+      }
     }
+
+    {//Catch errors
+
+      //Check ban
+      if($this->checkBan($result)) return false;
+
+      //Peer ban
+      if(
+        gettype($result) == 'string' && 
+        (
+          strpos($result, "You can't write in this chat (403)") !== false ||
+          strpos($result, "You are spamreported, you can't do this (400)") !== false
+        )        
+      ){
+
+        $spam = Spam::where('t_acc_phone', $this->getLogin())->where('peer', $peer)->update(
+          [
+            'status' => -1,
+            'group_joined_at' => NULL,
+          ]
+        );
+
+        return false;
+      }    
+
+      //Flood
+      if(gettype($result) == 'string'){
+        
+        if(strpos($result, "Slowmode is enabled in this chat: wait X seconds before sending another message to this chat. (420)")){
+          $matches = [];
+          preg_match(
+            "~[(]SLOWMODE_WAIT_([0-9]*)[)],~",
+            $result,
+            $matches
+          );
+  
+          if(isset($matches[1]) && $matches[1]){
+            $this->setFlood($matches[1], 'sendMessageFlood');
+            return false;
+          }else{
+            JugeLogs::log(188, 'flood no flood');
+          }
+        }
+
+        if(strpos($result, "Telegram returned an RPC error: FLOOD_WAIT_X (420)")){
+          $matches = [];
+          preg_match(
+            "~^Telegram returned an RPC error: FLOOD_WAIT_X [(]420[)] [(]FLOOD_WAIT_([0-9]*)[)], caused by~",
+            $result,
+            $matches
+          );
+  
+          if(isset($matches[1]) && $matches[1]){
+            $this->setFlood($matches[1], 'sendMessageFlood');
+            return false;
+          }else{
+            JugeLogs::log(188, 'flood no flood2');
+          }
+        }
+
+      }
+      
+    }
+
 
     //Log
     JugeLogs::log(120, $result);

@@ -39,7 +39,7 @@ window.terror= function(){console.log('error xzz')};
 
 //Juge load
 import load from './_juge/juge-loader.js';
-window.load = new load('#8ac2a73b','/img/nurik-loader.jpgz')
+window.load = new load('#8ac2a73b','/img/nurik-loader.jpg')
 
 //Draggable
 import draggable from 'vuedraggable';

@@ -22,6 +22,7 @@ class TAcc extends Model
       'type' => 'intToStr', 'intToStr' =>[
       1 => 'Логинен 🐢',
       0 => 'НЕлогинен ❌😱',
+      -1 => 'бан ⛱️',
     ]],
     ['key'    => 'created_at','label' => 'Создан', 'type' => 'moment', 'moment' => 'lll'],
   ];
@@ -99,9 +100,11 @@ class TAcc extends Model
       $q = $q->whereNotNull('group_joined_at');
     });
 
+    $query = $query->where('status', '>=' ,0);
+
     $query = $query->whereNull('work_at');
   
-    $query = $query->orderBy('status', 'desc');
+    $query = $query->orderBy('updated_at', 'ASC');
 
     $data = $query->get();
 
@@ -162,6 +165,10 @@ class TAcc extends Model
     }
   
     {//Where
+
+      $user = Auth::user(); 
+      if($user && $user->id != 1) $query = $query->where('owner_id', $user->id);      
+
       //Juge searches
       $query = JugeCRUD::whereSearches($query,$request);
 

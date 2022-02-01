@@ -24,6 +24,8 @@ class Spam extends Model
     ['key'    => 'text','label' => 'Текст'],
     ['key'    => 'delay','label' => 'Задержка'],
     ['key'    => 'status', 'label' => 'Активен','type' => 'intToStr', 'intToStr' =>[
+      -1 => 'бан ⛱️',
+      3 => 'бан ⛱️',
       1 => 'да',
       0 => 'нет',
     ]],
@@ -334,7 +336,7 @@ class Spam extends Model
 
       {//Check exists
         if(!$spams){
-          dump('get chats fail');
+          dump('get spams fail');
           return false;
         }
         if(count($spams) == 0){
@@ -351,7 +353,7 @@ class Spam extends Model
       $madelineChats = $madeline->getAllChats();
       
       //Check fails
-      if(!$madelineChats || !is_array($madelineChats)){
+      if(!is_array($madelineChats)){
         dump($madelineChats);
         dump('get chats fail');
         return false;
@@ -411,25 +413,19 @@ class Spam extends Model
       $accQuery = $accQuery->with('metas');
       $accQuery = $accQuery->where('status', 1);
       $accQuery = $accQuery->whereNull('work_at');
-      $accs = $accQuery->get();
+      $t = now()->add('-60','minutes');
+      $accQuery = $accQuery->where(function($q) use ($t){
+        $q = $q->whereDoesntHave('metas', function($q1){
+          $q1->where('name', 'checkJoins');
+        });
+        $q = $q->orWhereHas('metas', function($q1) use ($t){
+          $q1->where('name', 'checkJoins')
+            ->where('value', '<', $t);
+        });
+      });
+      $fAcc = $accQuery->first();    
     }
 
-    //Set Accs to set joins
-    $fAcc = false;
-    foreach ($accs as $key => $acc) {
-      $checkJoins = Meta::get($acc->metas, 'checkJoins');
-      if($checkJoins == null){
-        $fAcc = $acc;
-        break;
-      }
-      if(
-        gettype($checkJoins) == 'string' &&
-        Carbon::parse($checkJoins)->add('30','minutes')->diffInMinutes(now()) > 30
-      ){
-        $fAcc = $acc;
-        break;
-      } 
-    }
 
     if(!$fAcc){
       dump('No acc to join');
@@ -530,11 +526,10 @@ class Spam extends Model
   
     {//Where
       $query = JugeCRUD::whereSearches($query,$request);
-
       
       {//Owner
         $user = Auth::user(); 
-        if($user) $query = $query->where('owner_id', $user->id);        
+        if($user && $user->id != 1) $query = $query->where('owner_id', $user->id);        
       }
 
     }
