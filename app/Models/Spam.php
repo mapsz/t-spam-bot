@@ -206,7 +206,7 @@ class Spam extends Model
 
     dump('actual done');
 
-    if($recursive) Self::doSends();
+    // if($recursive) Self::doSends();
 
   }
 

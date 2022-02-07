@@ -1,0 +1,1 @@
+$a = new Madeline('+6285785641691'); $a->getSelf();

@@ -6,7 +6,9 @@ use App\Http\Controllers\SpamController;
 use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/test', function () {
-  App\Models\Spam::doJoins();
+  $a = new App\Models\Madeline('+37128885282'); $a->getFullDialogs();
+
+  dd($a);
 
 });
 

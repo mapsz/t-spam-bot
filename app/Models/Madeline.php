@@ -22,7 +22,7 @@ class Madeline extends Model
   private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
   private $error = false;
 
-  // $a = new Madeline('+6285785641691'); $a->getSelf();
+  // $a = new Madeline('+37128885282'); $a->getSelf();
 
 
   private static function getUrl(){return getenv('APP_URL') . 'madeline/';}
@@ -432,31 +432,17 @@ class Madeline extends Model
 
   }
 
-  public static function getFullDialogs($login){
+  public function getFullDialogs(){
 
-    $params = [
-      'work' => 'getFullDialogs',
-      'login' => $login,
-    ];
+    $result = $this->_query('getFullDialogs');
 
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
+    //Check Dialogs exists 
+    if(gettype($result) == "object") return $result;
 
-    $dialogs = json_decode(self::resultDecode($response));
+    //Log
+    JugeLogs::log(128, $result);
 
-
-    // //Check Dialogs exists 
-    if(
-      !$dialogs || 
-      gettype($dialogs) != "object"
-    ) return [];
-
-    $outDialogs = [];
-    foreach ($dialogs as $key => $dialog) {
-      array_push($outDialogs,(array)$dialog);
-    }
-
-    return $outDialogs;
+    return false;
 
   }
 
