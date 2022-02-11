@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateJugeLogsTable extends Migration
+class CreateMadelineLogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,12 @@ class CreateJugeLogsTable extends Migration
      */
     public function up()
     {
-        Schema::create('juge_logs', function (Blueprint $table) {
+        Schema::create('madeline_logs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('code');
-            $table->text('body');
+            $table->tinyInteger('status')->defaul('3');
+            $table->char('function');
+            $table->char('acc');
+            $table->text('result')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +30,6 @@ class CreateJugeLogsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('juge_logs');
+        Schema::dropIfExists('madeline_logs');
     }
 }
