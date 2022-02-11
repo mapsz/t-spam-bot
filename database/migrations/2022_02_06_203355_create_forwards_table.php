@@ -15,6 +15,9 @@ class CreateForwardsTable extends Migration
     {
         Schema::create('forwards', function (Blueprint $table) {
             $table->id();
+            $table->char('acc');
+            $table->char('to_peer');
+            $table->tinyInteger('status')->default(0);
             $table->timestamps();
         });
     }

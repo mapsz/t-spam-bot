@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Madeline;
 use App\Models\TAcc;
 use App\Models\Meta;
+use App\Models\ForwardSpam;
 use Carbon\Carbon;
 
 class Spam extends Model
@@ -42,7 +43,8 @@ class Spam extends Model
     [
       'name' => 't_acc_phone',
       'caption' => 'Аккаунт',
-      'type' => 'text'
+      'type'=>"select",
+      'list'=> [/* */],
     ],
     [
       'name' => 'name',
@@ -111,47 +113,36 @@ class Spam extends Model
     dd('done');
   }
 
-  public static function doForward(){
-    $logins = ['+447789122157','+380992416157'];
-
+  public static function doForwards(){
     
-
-    foreach ($logins as $login) {
-      $users = Madeline::getUnreadUsers($login);
-
-      
-      foreach ($users as $key => $user) {
-        //Get messages
-        $messages = Madeline::getHistory($login, $user['peer']->user_id, $user['unread_count']);      
-
-        //Form toForward
-        $messageIds = [];
-        foreach ($messages as $key => $message) {
-          array_push($messageIds, $message->id);        
-        }
-        
-        {//Forward
-          $forwardTo = false;
-          if($login == '+447789122157') $forwardTo = 'miner2t2';
-          if($login == '+380992416157') $forwardTo = 'miner2t2';
-          
-          $doForward = false;
-          if($forwardTo){
-  
-            $doForward = Madeline::forwardMessages($login, $messageIds, $user['peer']->user_id, $forwardTo);
-  
-            dump($doForward);
-            if($doForward){
-              Madeline::readHistory($login, $user['peer']->user_id);
-            }
-          }
-        }
-
-      }
+    {//Get acc
+      $accQuery = new TAcc;    
+      $accQuery = $accQuery->with('metas');
+      $accQuery = $accQuery->with('forward');
+      $accQuery = $accQuery->where('status', 1);
+      $accQuery = $accQuery->whereNull('work_at');
+      $accQuery = $accQuery->whereHas('forward', function($q){
+        $q->where('status', 1);
+      });
+      $t = now()->add('-60','minutes');
+      $accQuery = $accQuery->whereHas('metas', function($q) use ($t){
+        $q->where('name', 'checkDialogs')
+          ->where('value', '<', $t);
+      });
+      $fAcc = $accQuery->first();
     }
 
-   
-    
+    // dd($fAcc->forward->acc);
+
+    if(!$fAcc && !isset($fAcc->forward->acc)){
+      dump('nothing');
+      exit;
+    }
+
+    $fs = new ForwardSpam($fAcc->forward->acc, $fAcc->forward->to_peer);
+
+    return $fs->do();
+
   }
 
   public static function doSends($recursive = true){
@@ -508,11 +499,25 @@ class Spam extends Model
     $fInputs = [];
     foreach ($inputs as $key => $input) {
       if($input['name'] == 'status') continue;
+      if($input['name'] == 't_acc_phone'){
+        $accs = TAcc::getByCurrentUser();
+        foreach ($accs as $key => $v) {
+          array_push($input['list'], ['id'=>$v,    'name'=>$v]);
+        }
+      }
       array_push($fInputs, $input);
     }
     return $fInputs;
   }
-  public function jugeGetPostInputs()   {return $this->inputs;}
+  public function jugeGetPostInputs()   {
+    $inputs = $this->inputs;
+    $fInputs = [];
+    foreach ($inputs as $key => $input) {
+      if($input['name'] == 't_acc_phone') continue;
+      array_push($fInputs, $input);
+    }
+    return $fInputs;
+  }
   public function jugeGetKeys()         {return $this->keys;} 
 
 
@@ -549,7 +554,7 @@ class Spam extends Model
 
   //Pre validate edits
   public static function jugePostPreValidateEdits($data){return self::preValidateEdits($data);}
-  public static function jugePutPreValidateEdits($data){    
+  public static function jugePutPreValidateEdits($data){
     $user = Auth::user(); 
     if($user) $data['owner_id'] = $user->id;  
     return self::preValidateEdits($data);

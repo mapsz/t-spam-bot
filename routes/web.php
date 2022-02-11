@@ -6,7 +6,7 @@ use App\Http\Controllers\SpamController;
 use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/test', function () {
-  $a = new App\Models\Madeline('+37128885282'); $a->getFullDialogs();
+  $a = App\Models\TAcc::getByCurrentUser();
 
   dd($a);
 

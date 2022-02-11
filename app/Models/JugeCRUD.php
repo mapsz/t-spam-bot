@@ -62,6 +62,7 @@ class JugeCRUD extends Model
 
   public static function autoPut($model, $data){
 
+    // dd($data);
     //Edit
     foreach ($data as $k => $v) {
       if($k == 'id') continue;

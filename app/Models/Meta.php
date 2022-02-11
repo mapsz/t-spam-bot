@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\TAcc;
+use Carbon\Carbon;
+
 class Meta extends Model
 {
   use HasFactory;  public $guarded = [];
@@ -30,6 +33,45 @@ class Meta extends Model
         }        
       } 
     }
+  }
+
+  public static function setDelay($acc, $job){
+
+    if(str_contains($acc, '+')) {
+      $TAcc = TAcc::where('phone', $acc)->first();
+      if(isset($TAcc->id)) $acc = $TAcc->id;
+    }
+
+    //Set joins
+    $meta = Meta::updateOrCreate(
+      [
+        'metable_id' => $acc,
+        'metable_type' => 'App\Models\TAcc', 
+        'name' => $job
+      ],
+      ['value' => now()]
+    );
+  }  
+  
+  public static function getDelay($acc, $job, $delay){
+    if(str_contains($acc, '+')) {
+      $TAcc = TAcc::where('phone', $acc)->first();
+      if(isset($TAcc->id)) $acc = $TAcc->id;
+    }
+
+    $meta = Meta::where(
+      [
+        'metable_id' => $acc,
+        'metable_type' => 'App\Models\TAcc', 
+        'name' => $job
+      ]
+    )->first();
+
+    if(!isset($meta->value)) return false;
+
+    dump(Carbon::parse($meta->value)->diffInSeconds(now()));
+
+    return Carbon::parse($meta->value)->diffInSeconds(now()) < $delay;
   }
   
   public function metable(){

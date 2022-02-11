@@ -47,6 +47,10 @@ export default {
         link: "/spams",
         caption:"Спам",
       },
+      {
+        link: "/forwards",
+        caption:"Переадресация",
+      },
     ];
   },
   methods:{    

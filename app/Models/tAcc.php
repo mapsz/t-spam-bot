@@ -137,6 +137,19 @@ class TAcc extends Model
 
   }
 
+  public static function getByCurrentUser(){
+
+    $user = Auth::user(); 
+    if(!$user || $user->id < 1) return false;
+
+    $accs = self::where('owner_id', $user->id)->get();
+
+    $accs = $accs->pluck('phone');
+
+    return $accs;
+
+  }
+
   public static function jugeGet($request = []) {
 
     //Model
@@ -210,10 +223,12 @@ class TAcc extends Model
 
   public function jugeGetKeys()         {return $this->keys;} 
 
-
   //Relations
   public function spams(){
     return $this->hasMany('App\Models\Spam', 't_acc_phone', 'phone');
+  }   
+  public function forward(){
+    return $this->hasOne('App\Models\Forward', 'acc', 'phone');
   }   
   public function metas(){
     return $this->morphMany(Meta::class, 'metable');

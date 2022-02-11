@@ -9,6 +9,7 @@ let store = {
     user: require('./modules/user.vuex').default,
     spam: new jugeVuex('spam', true, true),
     tAcc: new jugeVuex('tAcc', true, true),
+    forward: new jugeVuex('forward', true, true),
 
   }
 };

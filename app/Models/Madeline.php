@@ -15,8 +15,8 @@ class Madeline extends Model
 {
   use HasFactory;
 
-  // private $debug = false;
-  private $debug = true;
+  private $debug = false;
+  // private $debug = true;
   private $login;
   private $loginInfo;
   private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
@@ -38,7 +38,8 @@ class Madeline extends Model
   public function __construct($login) {
     $this->setLogin($login);
   }
- 
+  
+  //Core
   private function encrypt($message): string{
     if(gettype($message) !== 'string') $message = json_encode($message);
     $key = $this->getCryptKey();
@@ -61,7 +62,7 @@ class Madeline extends Model
     return $cipher;
   }
   
-  public function decrypt(string $encrypted): string{
+  private function decrypt(string $encrypted): string{
     $key = $this->getCryptKey();
 
     $decoded = base64_decode($encrypted);
@@ -118,6 +119,8 @@ class Madeline extends Model
     } 
   }
 
+
+  //To madeline
   public function getSelf(){
     $result = $this->_query('getSelf');
     if(isset($result->_) && $result->_ == 'user'){
@@ -175,13 +178,6 @@ class Madeline extends Model
 
   }
 
-  public function resetAuthorization($hash){
-    
-    return $this->_query('account.resetAuthorization', ['hash' => $hash]);
-    
-
-  }
-
   public function loginSendCode($code, $relog = false){
 
     if($this->checkLogin()) return 'already log in';
@@ -223,17 +219,10 @@ class Madeline extends Model
 
   }
 
-  public static function loginSendCodeAndTest($login, $code){
-
-    self::loginSendCode($login, $code);
-    self::testMessage($login);
-
-
-  }
-
   public function joinChannel($channel){
-    $result = $this->_query('channels.joinChannel', ['channel' => $channel]);
 
+    //Madeline
+    $result = $this->_query('channels.joinChannel', ['channel' => $channel]);
     
     {//Success
 
@@ -284,6 +273,8 @@ class Madeline extends Model
         }
       }
     }
+
+    //Unknown Fail
     
     //Log
     JugeLogs::log(116, $result);
@@ -370,7 +361,7 @@ class Madeline extends Model
       if(
         gettype($result) == 'string' && 
         (
-          strpos($result, "You can't write in this chat (403)") !== false ||
+          // strpos($result, "You can't write in this chat (403)") !== false ||
           strpos($result, "You are spamreported, you can't do this (400)") !== false
         )        
       ){
@@ -476,63 +467,69 @@ class Madeline extends Model
 
   }
 
-  public static function getHistory($login, $peer, $limit){
-
-    // 'peer' => 517183883,
+  public function getHistory($peer, $limit){
 
     $params = [
-      'work' => 'getHistory',
-      'login' => $login,
+      'peer' => $peer, 
+      'limit' => $limit, 
+      'offset_id' => 0, 
+      'offset_date' => 0, 
+      'add_offset' => 0, 
+      'max_id' => 0, 
+      'min_id' => 0
+    ];
+
+    $result = $this->_query('messages.getHistory', $params);
+
+
+    if(isset($result->_) && ($result->_ == 'messages.messages' || $result->_ == 'messages.messagesSlice')) return $result;
+    
+    JugeLogs::log(129, $result);
+
+    return false;
+  }
+
+  public function readHistory($peer){
+
+    $params = [
       'peer' => $peer,
-      'limit' => $limit
+      'max_id' => 0
     ];
 
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
+    $result = $this->_query('messages.readHistory', $params);
 
-    $dialogs = self::resultDecode($response);
+    if(isset($result->_) && $result->_ == 'messages.affectedMessages') return true;
+    
+    JugeLogs::log(127, $result);
 
-    return json_decode($dialogs)->messages;
-  }
-
-  public static function readHistory($login, $peer){
-
-    // 'peer' => 517183883,
-
-    $params = [
-      'work' => 'readHistory',
-      'login' => $login,
-      'peer' => $peer,      
-    ];
-
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
-
-    $history = self::resultDecode($response);
-
-    return json_decode($history);
+    return false;
 
   }
 
-  public static function forwardMessages($login, $messageIds, $fromPeer, $toPeer){
+  public function forwardMessages($messageIds, $fromPeer, $toPeer){
 
     $params = [
-      'work' => 'forwardMessages',
-      'login' => $login,
       'from_peer' => $fromPeer,
       'to_peer' => $toPeer,
       'id' => $messageIds,
     ];
 
-    $request = Http::get(self::getUrl(), $params);
-    $response = (string) $request->getBody();
+    $result = $this->_query('messages.forwardMessages', $params);
 
-    $forward = self::resultDecode($response);
-
-    $dForward = json_decode($forward);
-    if($dForward && $dForward->updates && is_array($dForward->updates) && isset($dForward->updates[1])){
-      return true;
+    {//Success
+      if(
+        isset($result->_) && 
+        $result->_ == 'updates' && 
+        isset($result->request) && 
+        isset($result->request->_) && 
+        $result->request->_ == "messages.forwardMessages"
+      ){
+        return true;
+      }
     }
+
+    //Log
+    JugeLogs::log(133, $result);
 
     return false;
 
@@ -591,6 +588,10 @@ class Madeline extends Model
     }
     
     return false;
+  }
+
+  private function success(){
+
   }
 
   public function metas(){
