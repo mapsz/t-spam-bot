@@ -19,6 +19,11 @@ class JugeLogs extends Model
     $log = new JugeLogs;
     $log->code = $code;
     $log->body = $body;
-    return $log->save();
+    $log->save();
+    return $log;
+  }
+
+  public static function code($log, $code){
+    return self::where('id', $log->id)->update(['code' => $code]);
   }
 }

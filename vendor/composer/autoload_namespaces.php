@@ -6,5 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'danog\\' => array($vendorDir . '/phabel-transpiler74.danog/magicalserializer/src', $vendorDir . '/phabel-transpiler74.danog/primemodule/lib'),
+    'cash' => array($vendorDir . '/phabel-transpiler74.cash/lrucache/src'),
+    'Parsedown' => array($vendorDir . '/phabel-transpiler74.erusev/parsedown'),
     'Mockery' => array($vendorDir . '/mockery/mockery/library'),
 );

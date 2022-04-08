@@ -15,8 +15,8 @@ class Madeline extends Model
 {
   use HasFactory;
 
-  private $debug = false;
-  // private $debug = true;
+  // private $debug = false;
+  private $debug = true;
   private $login;
   private $loginInfo;
   private $cryptKey = 'pSUmlYgwbfAu57cH@yH4Ky9z6KHC9OJa';
@@ -112,6 +112,30 @@ class Madeline extends Model
 
   }
 
+  public static function resultDecode($response){
+    
+    $response = \str_replace("\n","",$response);
+
+    {//Decode response
+      $matches = [];
+      preg_match(
+        "~{\"result\":.,\"text\":`(.*)`}~",
+        $response,
+        $matches
+      );
+
+      if(isset($matches[1])){        
+        //Try json decode
+        if(json_decode($matches[1])) return json_decode($matches[1]);
+
+        //Just return
+        return $matches[1];
+      } 
+    }
+    
+    return false;
+  }
+
   private function checkBan($result){
     //Login ban
     if(
@@ -141,6 +165,7 @@ class Madeline extends Model
 
     return false;
   }
+  
   private function setFlood($time, $type){
     $meta = new Meta;
     $meta->metable_id = $this->getLogin();
@@ -178,7 +203,7 @@ class Madeline extends Model
     $result = $this->_query('phoneLogin');
         
     //Success
-    if($result->_ == 'auth.sentCode'){
+    if(isset($result->_) && $result->_ == 'auth.sentCode'){
       $this->getLog()->success($result);
       return 'need code';
     }
@@ -547,19 +572,109 @@ class Madeline extends Model
   
   public function testMessage(){
 
-    $chats = $this->getAllChats();
+    // $chats = $this->getAllChats();
 
-    $join = true;;
-    foreach ($chats as $key => $chat) {
-      if($chat->id == 778310890){
-        $join = false;
-        break;  
-      }
-    }
+    // $join = true;;
+    // foreach ($chats as $key => $chat) {
+    //   if($chat->id == 778310890){
+    //     $join = false;
+    //     break;  
+    //   }
+    // }
 
-    if($join) self::joinChannel('https://t.me/+2bE5sADRxpI5ZWY0');
 
-    dump(self::sendMessage('https://t.me/+2bE5sADRxpI5ZWY0', '👺🦆'));
+    // $params = [
+    //   'peer' => 'https://t.me/juge_playground_chat',
+    //   'message' => '2423432'
+    // ];
+
+    $media = [
+      '_' => 'inputMediaUploadedPhoto',
+      // 'file' => public_path() . '\img\spam-imgs\dd.png',
+      'file' => 'dd.png',
+      // 'file' => 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+      // 'file' => 'https://google.com'
+    ];
+
+    // $media =  ['_' => 'inputFile', 'id' => long, 'parts' => int, 'name' => 'string', 'md5_checksum' => 'string'];
+
+    $params = [
+      'peer' => 'https://t.me/juge_playground_chat',
+      'media' => $media,
+      'message' => 'hello',
+      'parse_mode' => 'Markdown'
+    ];
+
+
+    // $media = [
+    //   '_' => 'inputMediaContact', 
+    //   'phone_number' => 'string', 
+    //   'first_name' => 'string', 
+    //   'last_name' => 'string', 
+    //   'vcard' => 'string'    
+    // ];
+
+    // $inputSingleMedia = [
+    //   '_' => 'inputSingleMedia', 
+    //   'media' => $media,
+    //   'message' => 'hhh',
+    // ];
+
+
+    // $params = [
+    //   'peer' => 'https://t.me/juge_playground_chat',
+    //   'media' => $media,
+    // ];
+
+    // $params = [
+    //   'peer' => 'https://t.me/juge_playground_chat',
+    //   'multi_media' => [$inputSingleMedia, $inputSingleMedia],
+    // ];
+
+    // $params = [
+    //   'peer' => 'https://t.me/juge_playground_chat',
+    //   'multi_media' => [$media, $media],
+    //   'message' => 'hello',
+    //   'parse_mode' => 'Markdown'
+    // ];
+
+
+    // $media = [
+    //   '_' => 'inputMediaUploadedPhoto',
+    //   'file' => public_path() . '\img\spam-imgs\dd.png',
+    // ];
+
+    // $params = [
+    //   'peer' => '@me',
+    //   'media' => $media,
+    // ];
+
+    // $params = [
+    //   'peer' => '@me',
+    //   'media' => [
+    //       '_' => 'inputMediaUploadedPhoto',
+    //       'file' => 'dd.png'
+    //   ],
+    // ];
+
+     
+    $params = [
+      'peer' => 'https://t.me/juge_playground_chat',
+      'message' => 'fghfgh'
+    ];
+
+    // $result = $this->_query('upload', 'dd.png');
+    // $result = $this->_query('messages.uploadMedia', $params);
+    // $result = $this->_query('messages.sendMultiMedia', $params);
+    // $result = $this->_query('messages.sendMedia', $params);
+    $result = $this->_query('messages.sendMessage', $params);
+
+    // dump($params);
+    dump($result);
+
+    // if($join) self::joinChannel('https://t.me/juge_playground_chat');
+
+    // dump(self::sendMessage('https://t.me/juge_playground_chat', '👺🦆'));
 
     // self::leaveChannel($login, 778310890);
 

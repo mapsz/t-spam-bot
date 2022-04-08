@@ -134,7 +134,7 @@ class jugeVuex {
         let loaded = true;
         //Set params
         let params = JSON.parse(JSON.stringify(state.filters));
-        params.model = modelName;    
+        params.model = modelName;
         
         //Infinite
         if(state.infinite){
@@ -220,6 +220,24 @@ class jugeVuex {
       
         
         return;
+      },
+      async refreshRow({commit,state,dispatch}, id){
+        
+        //Set params
+        let params = {};
+        params.model = modelName;
+        params.id = id;
+        let r = await ax.fetch('/juge',params,'get', false);
+
+        //Get rows
+        let rows = state.rows;
+
+        //Replace row
+        let k = rows.findIndex(x => x.id == r.id);
+        rows[k] = r
+
+        await commit('mRows',rows);
+
       },
       async setInfinite({commit},infinite){
         await commit('mInfinite',infinite);

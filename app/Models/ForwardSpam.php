@@ -57,12 +57,30 @@ class ForwardSpam extends Model{
 
   public function do(){
 
+    dump('Forwards ' . $this->getLogin());
+
     if(!$this->madelineDialogs()){
-      exit;
+      return 0;
     }
+
+    // dump();
+
+    // if(!is_array($this->getDialogs())){
+    //   dump('no dialogs'); 
+    //   return false;
+    // } 
+
+    // dump('Dialogs ' . count($this->getDialogs()));
+    dump('User Dialogs ' . count($this->getUserDialogs()));
+    dump('Unread User Dialogs ' . count($this->getUnreadUserDialogs()));
+
+    if(count($this->getUnreadUserDialogs()) < 1){
+      dump('No unread');
+      return 0;
+    }
+
     $this->madelineHistoriesFromUnreadDialogs();
     $this->setToForwardFromHistories();
-
     $this->doForwads();
 
   }
@@ -132,8 +150,10 @@ class ForwardSpam extends Model{
     }
     
     {//Set dialogs
+      dump('Madeline get Dialogs');
       $dialogs = $this->getMadeline()->getFullDialogs();
       $this->setDialogs($dialogs);  
+      dump('Madeline get Dialogs done');
     }  
 
     //Set delay

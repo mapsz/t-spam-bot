@@ -81,7 +81,7 @@
       </span>
       <!-- Custom -->
       <span v-else-if="data.field.type == 'custom'">
-        <component :is="data.field.component" :data="data.item" @success="success()"></component>
+        <component :is="data.field.component" :data="data.item" @success="success()" @refresh="refreshTable()"></component>
       </span>           
       <!-- Some type -->
       <span v-else-if="data.field.type != undefined" class="text-danger">
@@ -363,7 +363,6 @@ methods:{
   success(){
     this.fetch();
   },
-
   async doDelete(){
 
     if(!this.toDelete || this.toDelete.id == undefined){

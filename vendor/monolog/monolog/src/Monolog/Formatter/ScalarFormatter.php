@@ -1,5 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 /*
  * This file is part of the Monolog package.
  *
@@ -8,7 +9,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace Monolog\Formatter;
 
 /**
@@ -22,30 +22,26 @@ class ScalarFormatter extends NormalizerFormatter
     /**
      * {@inheritDoc}
      *
-     * @phpstan-return array<string, scalar|null> $record
+     * @phpstan-return array<string, (scalar | null)> $record
      */
-    public function format(array $record): array
+    public function format(array $record) : array
     {
         $result = [];
         foreach ($record as $key => $value) {
             $result[$key] = $this->normalizeValue($value);
         }
-
         return $result;
     }
-
     /**
-     * @param  mixed                      $value
-     * @return scalar|null
+     * @param mixed $value
+     * @return (scalar | null)
      */
     protected function normalizeValue($value)
     {
         $normalized = $this->normalize($value);
-
         if (is_array($normalized)) {
             return $this->toJson($normalized, true);
         }
-
         return $normalized;
     }
 }

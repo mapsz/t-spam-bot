@@ -1,5 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
+declare (strict_types=1);
 /*
  * This file is part of the Monolog package.
  *
@@ -8,12 +9,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace Monolog\Handler;
 
 use Monolog\Logger;
 use Psr\Log\LogLevel;
-
 /**
  * Blackhole
  *
@@ -31,29 +30,26 @@ class NullHandler extends Handler
      * @var int
      */
     private $level;
-
     /**
-     * @param string|int $level The minimum logging level at which this handler will be triggered
+     * @param (string | int) $level The minimum logging level at which this handler will be triggered
      *
-     * @phpstan-param Level|LevelName|LogLevel::* $level
+     * @phpstan-param (Level | LevelName | LogLevel::*) $level
      */
     public function __construct($level = Logger::DEBUG)
     {
         $this->level = Logger::toMonologLevel($level);
     }
-
     /**
      * {@inheritDoc}
      */
-    public function isHandling(array $record): bool
+    public function isHandling(array $record) : bool
     {
         return $record['level'] >= $this->level;
     }
-
     /**
      * {@inheritDoc}
      */
-    public function handle(array $record): bool
+    public function handle(array $record) : bool
     {
         return $record['level'] >= $this->level;
     }

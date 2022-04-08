@@ -18,12 +18,14 @@ class TAcc extends Model
     ['key'    => 'id','label' => 'ID'],
     ['key'    => 'name','label' => 'Название'],
     ['key'    => 'phone','label' => 'Телефон'],
-    ['key'    => 'status', 'label' => 'Логин',
-      'type' => 'intToStr', 'intToStr' =>[
-      1 => 'Логинен 🐢',
-      0 => 'НЕлогинен ❌😱',
-      -1 => 'бан ⛱️',
-    ]],
+    ['key'    => 'status', 'label' => 'Логин', 'type' => 'custom', 'component' => 'telegram-account-status'],
+    // ['key'    => 'status', 'label' => 'Логин',
+    //   'type' => 'intToStr', 'intToStr' =>[
+    //   1 => 'Логинен 🐢',
+    //   0 => 'НЕлогинен ❌😱',
+    //   2 => 'Логинем 🐤',
+    //   -1 => 'бан ⛱️',
+    // ]],
     ['key'    => 'created_at','label' => 'Создан', 'type' => 'moment', 'moment' => 'lll'],
   ];
 
@@ -51,6 +53,8 @@ class TAcc extends Model
   }
 
   public static function setNotLogin($phone){
+
+    dumo('setNotLogin');
 
     //Get acc
     $tAcc = self::where('phone', $phone)->first();
@@ -109,8 +113,8 @@ class TAcc extends Model
     $data = $query->get();
 
     //Remove not actual spams
-    foreach ($data as $k => $row) {
-      $gotActualSpam = false;
+    $gotActualSpam = false;
+    foreach ($data as $k => $row) {      
       $actualSpams = [];
       foreach ($row->spams as $kspam => $spam) {
         if(
@@ -175,6 +179,10 @@ class TAcc extends Model
           $q->where('status', 1);
         }]);
       }
+
+      //Metas
+      $query = $query->with('metas');
+
     }
   
     {//Where
@@ -211,6 +219,8 @@ class TAcc extends Model
       foreach ($data as $k => $row) {
        // 
       }
+
+      $data= JugeCRUD::setMetas($data);
     }
   
     //Single

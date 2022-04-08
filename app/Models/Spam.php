@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Madeline;
 use App\Models\TAcc;
 use App\Models\Meta;
+use App\Models\Work;
 use App\Models\ForwardSpam;
+use App\Models\Spams;
 use Carbon\Carbon;
 
 class Spam extends Model
 {
-  use HasFactory;
+  use HasFactory; 
 
   protected $keys = [
     ['key'    => 'id','label' => 'ID'],
@@ -70,6 +72,157 @@ class Spam extends Model
     ],
   ];
 
+
+  public static function getActualWork(){
+    // 
+  }
+
+  public static function pDoJoins(){
+    
+    {//Get accs with groups to join
+      $q = new TAcc;
+      $q = $q->where('status', 1);
+      $q = $q->whereHas('spams', function($q1){
+        $q1->whereNull('group_joined_at');
+      });
+      $q = $q->with('spams', function($q1){
+        $q1->whereNull('group_joined_at');
+      });
+      $tAccs = $q->get();
+    }
+    
+    {//To join
+      $toJoin = [];      
+      foreach ($tAccs as $acc) {
+        $toJoin[$acc->phone] = [];
+        foreach ($acc->spams as $spam) {
+          array_push($toJoin[$acc->phone], $spam->peer);
+        }
+      }
+    }
+
+    {//Make works
+      
+      {//Get existing
+        //Get accs
+        $tAccs = [];
+        foreach ($toJoin as $tAcc => $v){
+          array_push($tAccs, $tAcc);
+        }
+
+        //get works
+        $preWorksExists = Work::with('properties')->where('function', 'join_chat')->whereIn('account', $tAccs)->whereNull('done_at')->get();
+        
+        {//Handle works
+          $worksExists = [];
+          foreach ($preWorksExists as $work) {
+            $chat_id = false;
+            foreach ($work->properties as $key => $property) {
+              if($property->name == 'chat_id'){
+                $chat_id = $property->value;
+                continue;
+              }
+            }
+            if($chat_id) array_push($worksExists, ['account' => $work->account, 'chat_id' => $chat_id]);
+          }
+        }
+      }
+      
+      {//Make new
+        foreach ($toJoin as $tAcc => $peers) {
+          foreach ($peers as $peer) {
+            foreach ($worksExists as $workExists) {
+              if($workExists['account'] == $tAcc && $workExists['chat_id'] == $peer) continue 2;
+            }
+            dump('Add work join_chat - ' . $tAcc . ' - ' . $peer);
+            Work::new($tAcc, 'join_chat', 500, ['chat_id' => $peer]);
+          }        
+        }
+      }
+
+    }
+    
+    return true;
+  }
+
+  public static function pDoSends(){
+    
+    {//Get spams
+      {// Get spams
+        $q = new Spam;
+        $q = $q->where('status', 1);
+        $q = $q->whereNotNull('group_joined_at');
+        $q = $q->orderBy('sent_at', 'ASC');
+        $q = $q->whereHas('tAcc', function($q1){
+          $q1 = $q1->where('status',1);
+        });
+        $dbSpams = $q->get();
+      }
+      
+      {//Get actuals
+        $actualSpams = [];
+        $now = now();
+        foreach ($dbSpams as $kspam => $spam) {
+          $toSendAt = Carbon::parse($spam->sent_at)->add($spam->delay,'minutes');
+          if( $toSendAt < $now || $spam->sent_at == NULL ){
+            array_push($actualSpams, $spam);
+          }
+        }
+      }
+
+      $spams = $actualSpams;
+    }
+    
+    {//Get works
+      $tAccs = [];
+      foreach($dbSpams->unique('t_acc_phone') as $spam) array_push($tAccs, $spam->t_acc_phone);
+  
+      $q = new Work;
+      $q = $q->with('properties'); 
+      $q = $q->where('function', 'send_message'); 
+      $q = $q->where(function($q1){
+          $q1->where('status', 1) 
+          ->orWhere('status', 2);
+      });
+      $q = $q->whereIn('account', $tAccs);
+  
+      $preWorksExists = $q->get();
+    }
+
+    {//Handle works
+      $worksExists = [];
+      foreach ($preWorksExists as $work) {
+        $chat_id = false;
+        foreach ($work->properties as $key => $property) {
+          if($property->name == 'spam_id'){
+            $spam_id = $property->value;
+            continue;
+          }
+        }
+        if($spam_id) array_push($worksExists, ['account' => $work->account, 'spam_id' => $spam_id]);
+      }
+    }    
+              
+    {//Make new
+      $add = 0;
+      foreach ($spams as $spam) {
+        foreach ($worksExists as $workExists) {
+          if(intval($spam->id) == intval($workExists['spam_id'])) continue 2;
+        }
+        dump('Add work send_message - ' . $spam->t_acc_phone . ' - ' . $spam->peer);
+        Work::new($spam->t_acc_phone, 'send_message', 1000, ['chat_id' => $spam->peer, 'text' => $spam->text, 'spam_id' => $spam->id]); 
+        $add++; 
+      }  
+    }
+
+    return $add;
+  }
+
+  public static function setSend($id){
+    return Spam::where('id', $id)->update(['sent_at' => now()]);
+  }
+
+
   public static function removeWorks(){
 
     dump('Remove Works');
@@ -115,6 +268,8 @@ class Spam extends Model
 
   public static function doForwards(){
     
+    dump('Do Forwards');
+    
     {//Get acc
       $accQuery = new TAcc;    
       $accQuery = $accQuery->with('metas');
@@ -124,22 +279,38 @@ class Spam extends Model
       $accQuery = $accQuery->whereHas('forward', function($q){
         $q->where('status', 1);
       });
-      $t = now()->add('-60','minutes');
-      $accQuery = $accQuery->whereHas('metas', function($q) use ($t){
-        $q->where('name', 'checkDialogs')
-          ->where('value', '<', $t);
+      $t = now()->add(-(config('forward.checkDialogsDelay')),'seconds');
+      $accQuery = $accQuery->where(function($q) use ($t){
+        $q = $q->whereDoesntHave('metas', function($q1){
+          $q1->where('name', 'checkDialogs');
+        });
+        $q = $q->orWhereHas('metas', function($q1) use ($t){
+          $q1->where('name', 'checkDialogs')
+            ->where('value', '<', $t);
+        });
       });
-      $fAcc = $accQuery->first();
+
+
+      $acc = $accQuery->first();
     }
 
-    // dd($fAcc->forward->acc);
-
-    if(!$fAcc && !isset($fAcc->forward->acc)){
-      dump('nothing');
-      exit;
+    if(!$acc && !isset($acc->forward->acc)){
+      dump('not now 1');
+      return false;
     }
 
-    $fs = new ForwardSpam($fAcc->forward->acc, $fAcc->forward->to_peer);
+    {//Set start work
+      $acc->work_at = now();
+      $acc->save();
+    }
+
+    $fs = new ForwardSpam($acc->forward->acc, $acc->forward->to_peer);
+
+        
+    {//Set work done
+      $acc->work_at = null;
+      $acc->save();
+    }
 
     return $fs->do();
 
@@ -147,7 +318,7 @@ class Spam extends Model
 
   public static function doSends($recursive = true){
 
-    dump('Do actual');
+    dump('Do Sends');
 
     $acc = TAcc::getWithActualSpams();
 
@@ -156,7 +327,7 @@ class Spam extends Model
       dump($acc);
       dump('no phone');
       dump('no actual?');
-      exit;
+      return false;
     }
 
     dump($acc->phone);
@@ -164,7 +335,7 @@ class Spam extends Model
     //Exit if no actual
     if(!isset($acc->spams)){
       dump('no actual');
-      exit;
+      return false;
     }
     
     {//Set start work
@@ -182,7 +353,7 @@ class Spam extends Model
         $acc->save();
       }
       dump('not login');
-      exit;
+      return false;
     }
     
     //Send
@@ -400,7 +571,7 @@ class Spam extends Model
   public static function setMassJoins(){
     
     {//Accs
-      $accQuery = new TAcc;    
+      $accQuery = new TAcc;
       $accQuery = $accQuery->with('metas');
       $accQuery = $accQuery->where('status', 1);
       $accQuery = $accQuery->whereNull('work_at');
@@ -414,7 +585,7 @@ class Spam extends Model
             ->where('value', '<', $t);
         });
       });
-      $fAcc = $accQuery->first();    
+      $fAcc = $accQuery->first();
     }
 
 
@@ -609,5 +780,10 @@ class Spam extends Model
     return true;
 
   }
+
+  //Relations
+  public function tAcc(){
+    return $this->belongsTo('App\Models\tAcc', 't_acc_phone', 'phone');
+  }   
 
 }

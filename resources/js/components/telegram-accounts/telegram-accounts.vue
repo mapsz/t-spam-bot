@@ -2,11 +2,17 @@
 <juge-layout>
   <h1>Аккаунты</h1>
   
-  <!-- Add -->
-  <div>
+  <!-- Login Madeline-->
+  <div v-if=0>
     <!-- Show button -->
     <button v-if="!loginShow" @click="loginShow=true" class="btn btn-success">Залогинить</button>
     <telegram-account-login v-if="loginShow" @close="loginShow=false"/>
+  </div>
+
+  <!-- Login Pyrogram -->
+  <div>
+    <button v-if="!loginShow" @click="loginShow=true" class="btn btn-success">Добавить</button>
+    <telegram-pyrogram-account-login v-if="loginShow" @close="loginShow=false"/>
   </div>
   
   <!-- List -->
