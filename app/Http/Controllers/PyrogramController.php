@@ -105,24 +105,18 @@ class PyrogramController extends Controller
 
       //Set work done
       $update = Work::where('id', $data->id)->update(['status' => 3, 'done_at' => Carbon::parse(intval($data->done_at))]);
-      $work = Work::with('properties')->where('id', $data->id)->first();
+
+      
+      {//Get data
+        $work = Work::with('properties')->where('id', $data->id)->first();
+        $phone = $work->account;
+      }
       
       {//Handle response
 
         //Get response
         $response = json_decode($data->response);
         if(!$response) $response = $data->response;
-
-        //Send message
-        if($work->function == "send_message"){
-
-          //Get spam id
-          $spamId = $work->properties[array_search('spam_id', array_column($work->properties->toArray(), 'name'))]->value;
-
-          //Set send
-          Spam::setSend($spamId);
-
-        }
       
         {// "_" 
           if(isset($response->_)){
@@ -163,6 +157,13 @@ class PyrogramController extends Controller
             if($response->_ == 'Message'){
               //Sign In
               if($work->function == "send_message"){
+
+                //Get spam id
+                $spamId = $work->properties[array_search('spam_id', array_column($work->properties->toArray(), 'name'))]->value;
+
+                //Set send
+                Spam::setSend($spamId);
+
                 //done
                 JugeLogs::code($log, 1);
                 return response()->json(1);
@@ -183,7 +184,7 @@ class PyrogramController extends Controller
           }
         }
 
-        // already login
+        // Already login
         if($response == 'already login'){
           Pyrogram::setLoged($work->account);
           //done
@@ -196,10 +197,10 @@ class PyrogramController extends Controller
             if(strpos($response, "[401 SESSION_REVOKED]") !== false || strpos($response, "[401 AUTH_KEY_UNREGISTERED]") !== false){
               $tAcc = tAcc::where('phone', $work->account)->update(['status' => 0]);
               //done
-              JugeLogs::code($log, 1);
+              JugeLogs::code($log, 2);
               return response()->json($update);
             }
-            if(strpos($response, "[400 PHONE_CODE_INVALID]") !== false){
+            elseif(strpos($response, "[400 PHONE_CODE_INVALID]") !== false){
 
               try{
                 //Start DB
@@ -224,13 +225,82 @@ class PyrogramController extends Controller
               }
 
               //done
-              JugeLogs::code($log, 1);
+              JugeLogs::code($log, 2);
               return response()->json($update);
+            }
+            elseif(strpos($response, "[403 CHAT_WRITE_FORBIDDEN]") !== false){
+
+              //Set bad group ban
+              Pyrogram::setGroupBan($work->id, $phone);
+
+              //Stop
+              tAcc::setStop($phone, 5);
+
+              //done
+              JugeLogs::code($log, 2);
+              return response()->json($update);
+            }
+            elseif(strpos($response, "[400 USER_BANNED_IN_CHANNEL]") !== false){
+
+              //Set bad
+              tAcc::where('phone', $phone)->update(['status' => -1]);
+
+              //done
+              JugeLogs::code($log, 2);
+              return response()->json($update);
+            }
+            elseif(strpos($response, "[400 USERNAME_NOT_OCCUPIED]") !== false || strpos($response, "Username not found:") !== false){
+
+              //Set bad group name
+              Pyrogram::setBadGroupName($work->id);
+
+              //Stop
+              tAcc::setStop($phone, 5);
+
+              //done
+              JugeLogs::code($log, 2);
+              return response()->json($update);
+            }
+            elseif(strpos($response, "[WinError 10053]") !== false){
+
+              //Stop acc
+              tAcc::setStop($phone, 240);
+
+              //done
+              JugeLogs::code($log, -2);
+              return response()->json(0);
+
+            }
+            elseif(strpos($response, "Connection lost") !== false){
+
+              //Stop acc
+              tAcc::setStop($phone, 5);
+
+              //done
+              JugeLogs::code($log, -2);
+              return response()->json(0);
+              
             }
           }
         }
 
         
+      }
+
+      {//Unknown response
+
+        //Send message
+        if($work->function == "send_message"){
+
+          //Get spam id
+          $spamId = $work->properties[array_search('spam_id', array_column($work->properties->toArray(), 'name'))]->value;
+
+          //Set send
+          Spam::setSend($spamId);
+
+        }
+
+        tAcc::setStop($phone, 15);
       }
 
 

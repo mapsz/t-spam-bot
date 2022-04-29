@@ -7,8 +7,8 @@ namespace Composer\Autoload;
 class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
 {
     public static $files = array (
-        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
         '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
         'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
@@ -17,8 +17,6 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         '959559a3322c2eacf0f8ef99323aa33c' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/amp/lib/Internal/functions.php',
         '0d59ee240a4cd96ddbb4ff164fccea4d' => __DIR__ . '/..' . '/symfony/polyfill-php73/bootstrap.php',
         '337832e3085ca913146b09d18026641f' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/byte-stream/lib/functions.php',
-        '8825ede83f2f289127722d4e842cf7e8' => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme/bootstrap.php',
-        'b6b991a57620e2fb6b2f66f03fe9ddc2' => __DIR__ . '/..' . '/symfony/string/Resources/functions.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         'e13fce1d372f05d9ecf880d1d986384b' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/sync/src/functions.php',
         'd055e0f274ab4d44d36881790cb19437' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/sync/src/ConcurrentIterator/functions.php',
@@ -29,23 +27,25 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         'ab09d39c59caaab6c218695e30b517e5' => __DIR__ . '/..' . '/phabel-transpiler74.league/uri-parser/src/functions_include.php',
         '4975dbff6fcdafa23521b86231c3f11a' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/socket/src/functions.php',
         '13d12e9375443f0715f74a5cdfd7d29a' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/socket/src/Internal/functions.php',
-        'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
         '801c31d8ed748cfa537fa45402288c95' => __DIR__ . '/..' . '/psy/psysh/src/functions.php',
+        'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
         '467c471869e273fef35cbdac3b321aaa' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/http/src/functions.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
         '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
         'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
-        'e39a8b23c42d4e1452234d762b03835a' => __DIR__ . '/..' . '/ramsey/uuid/src/functions.php',
-        '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
-        '81b4a065660f769474a1b44409ba67d0' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/http-client/src/Internal/functions.php',
+        '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
+        'e39a8b23c42d4e1452234d762b03835a' => __DIR__ . '/..' . '/ramsey/uuid/src/functions.php',
         '265b4faa2b3a9766332744949e83bf97' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Collections/helpers.php',
         'c7a3c339e7e14b60e06a2d7fcce9476b' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Events/functions.php',
         'f0906e6318348a765ffb6eb24e0d0938' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/helpers.php',
         '58571171fd5812e6e447dce228f52f4d' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Support/helpers.php',
+        '81b4a065660f769474a1b44409ba67d0' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/http-client/src/Internal/functions.php',
+        '8825ede83f2f289127722d4e842cf7e8' => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme/bootstrap.php',
         '9cdd7b9056abc3081735233ba9dd9c7f' => __DIR__ . '/..' . '/facade/flare-client-php/src/helpers.php',
+        '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
         '59df0d81c6f6635e410fb2011905d9a3' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/parallel/lib/Context/functions.php',
         '1b1a476c34a66fac967f9dc6c7de97aa' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/parallel/lib/Sync/functions.php',
         '8b5477bc3ab7198820591b86ae455c67' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/parallel/lib/Worker/functions.php',
@@ -69,11 +69,12 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         '140c83e8303155983e29d3a1f7271049' => __DIR__ . '/..' . '/phabel/phabel/vendor-bundle/symfony/polyfill-php73/bootstrap.php',
         'e41a6845efa8c3520413bb40b45af1a0' => __DIR__ . '/..' . '/phabel/phabel/vendor-bundle/symfony/polyfill-php80/bootstrap.php',
         '8da33189b858455f169a357e32f9edfa' => __DIR__ . '/..' . '/phabel/phabel/vendor-bundle/symfony/string/Resources/functions.php',
-        '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
+        'b6b991a57620e2fb6b2f66f03fe9ddc2' => __DIR__ . '/..' . '/symfony/string/Resources/functions.php',
         'efa3b80c61fb35e374f529ec349af098' => __DIR__ . '/..' . '/danog/madelineproto/src/BigIntegor.php',
         '81f2b6c0f9b646f6cc1f1a36118d70e9' => __DIR__ . '/..' . '/danog/madelineproto/src/YieldReturnValue.php',
         'cad60ee4f0892badc28f3feef7cce08d' => __DIR__ . '/..' . '/danog/madelineproto/src/polyfill.php',
         '548109ddbe517701334a1e51249ea7c0' => __DIR__ . '/..' . '/danog/madelineproto/___transpiledWithPhabel.php',
+        'ed962a97bd972bc82007176b647d4e36' => __DIR__ . '/..' . '/facade/ignition/src/helpers.php',
         'dcade6ba7f9867d0c78aa3b61a2869f5' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/file/src/functions.php',
         'f70e433f7f4faadba6bf38f259d6fb45' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/log/src/functions.php',
         '23af9e8657c93dee5b655d7d1ce26679' => __DIR__ . '/..' . '/phabel-transpiler74.amphp/mysql/src/functions.php',
@@ -86,7 +87,6 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         'db03a443514775d2d4dfbad5c6f13507' => __DIR__ . '/..' . '/phabel-transpiler74.phpseclib/phpseclib/phpseclib/bootstrap.php',
         'f3e4018d16719bbf7a9a1862c24d86ab' => __DIR__ . '/..' . '/phabel-transpiler74.symfony/polyfill-mbstring/bootstrap.php',
         'ab05c1b4356d9f7c11b512eef3c48bed' => __DIR__ . '/..' . '/phabel-transpiler74.symfony/polyfill-php80/bootstrap.php',
-        'ed962a97bd972bc82007176b647d4e36' => __DIR__ . '/..' . '/facade/ignition/src/helpers.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -144,11 +144,13 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
             'Symfony\\Component\\ErrorHandler\\' => 31,
             'Symfony\\Component\\CssSelector\\' => 30,
             'Symfony\\Component\\Console\\' => 26,
+            'Sopamo\\LaravelFilepond\\' => 23,
         ),
         'R' => 
         array (
             'Ramsey\\Uuid\\' => 12,
             'Ramsey\\Collection\\' => 18,
+            'RahulHaque\\Filepond\\' => 20,
         ),
         'P' => 
         array (
@@ -444,6 +446,10 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         array (
             0 => __DIR__ . '/..' . '/symfony/console',
         ),
+        'Sopamo\\LaravelFilepond\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/sopamo/laravel-filepond/src',
+        ),
         'Ramsey\\Uuid\\' => 
         array (
             0 => __DIR__ . '/..' . '/ramsey/uuid/src',
@@ -451,6 +457,10 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         'Ramsey\\Collection\\' => 
         array (
             0 => __DIR__ . '/..' . '/ramsey/collection/src',
+        ),
+        'RahulHaque\\Filepond\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src',
         ),
         'Psy\\' => 
         array (
@@ -1337,9 +1347,12 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         'App\\Http\\Controllers\\ForwardController' => __DIR__ . '/../..' . '/app/Http/Controllers/ForwardController.php',
         'App\\Http\\Controllers\\HomeController' => __DIR__ . '/../..' . '/app/Http/Controllers/HomeController.php',
         'App\\Http\\Controllers\\JugeCRUDController' => __DIR__ . '/../..' . '/app/Http/Controllers/JugeCRUDController.php',
+        'App\\Http\\Controllers\\JugeFileUploadController' => __DIR__ . '/../..' . '/app/Http/Controllers/JugeFileUploadController.php',
         'App\\Http\\Controllers\\MadelineController' => __DIR__ . '/../..' . '/app/Http/Controllers/MadelineController.php',
+        'App\\Http\\Controllers\\PyrogramController' => __DIR__ . '/../..' . '/app/Http/Controllers/PyrogramController.php',
         'App\\Http\\Controllers\\SpamController' => __DIR__ . '/../..' . '/app/Http/Controllers/SpamController.php',
         'App\\Http\\Controllers\\TAccController' => __DIR__ . '/../..' . '/app/Http/Controllers/TAccController.php',
+        'App\\Http\\Controllers\\WorkController' => __DIR__ . '/../..' . '/app/Http/Controllers/WorkController.php',
         'App\\Http\\Kernel' => __DIR__ . '/../..' . '/app/Http/Kernel.php',
         'App\\Http\\Middleware\\Authenticate' => __DIR__ . '/../..' . '/app/Http/Middleware/Authenticate.php',
         'App\\Http\\Middleware\\EncryptCookies' => __DIR__ . '/../..' . '/app/Http/Middleware/EncryptCookies.php',
@@ -1353,13 +1366,17 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         'App\\Models\\Forward' => __DIR__ . '/../..' . '/app/Models/Forward.php',
         'App\\Models\\ForwardSpam' => __DIR__ . '/../..' . '/app/Models/ForwardSpam.php',
         'App\\Models\\JugeCRUD' => __DIR__ . '/../..' . '/app/Models/JugeCRUD.php',
+        'App\\Models\\JugeFileUpload' => __DIR__ . '/../..' . '/app/Models/JugeFileUpload.php',
         'App\\Models\\JugeLogs' => __DIR__ . '/../..' . '/app/Models/JugeLogs.php',
         'App\\Models\\Madeline' => __DIR__ . '/../..' . '/app/Models/Madeline.php',
         'App\\Models\\MadelineLog' => __DIR__ . '/../..' . '/app/Models/MadelineLog.php',
         'App\\Models\\Meta' => __DIR__ . '/../..' . '/app/Models/Meta.php',
+        'App\\Models\\Pyrogram' => __DIR__ . '/../..' . '/app/Models/Pyrogram.php',
         'App\\Models\\Spam' => __DIR__ . '/../..' . '/app/Models/Spam.php',
         'App\\Models\\TAcc' => __DIR__ . '/../..' . '/app/Models/TAcc.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
+        'App\\Models\\Work' => __DIR__ . '/../..' . '/app/Models/Work.php',
+        'App\\Models\\WorkProperty' => __DIR__ . '/../..' . '/app/Models/WorkProperty.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\AuthServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AuthServiceProvider.php',
         'App\\Providers\\BroadcastServiceProvider' => __DIR__ . '/../..' . '/app/Providers/BroadcastServiceProvider.php',
@@ -5983,6 +6000,15 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         'Psy\\VersionUpdater\\GitHubChecker' => __DIR__ . '/..' . '/psy/psysh/src/VersionUpdater/GitHubChecker.php',
         'Psy\\VersionUpdater\\IntervalChecker' => __DIR__ . '/..' . '/psy/psysh/src/VersionUpdater/IntervalChecker.php',
         'Psy\\VersionUpdater\\NoopChecker' => __DIR__ . '/..' . '/psy/psysh/src/VersionUpdater/NoopChecker.php',
+        'RahulHaque\\Filepond\\AbstractFilepond' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/AbstractFilepond.php',
+        'RahulHaque\\Filepond\\Console\\FilepondClear' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/Console/FilepondClear.php',
+        'RahulHaque\\Filepond\\Facades\\Filepond' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/Facades/Filepond.php',
+        'RahulHaque\\Filepond\\Filepond' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/Filepond.php',
+        'RahulHaque\\Filepond\\FilepondServiceProvider' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/FilepondServiceProvider.php',
+        'RahulHaque\\Filepond\\Http\\Controllers\\FilepondController' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/Http/Controllers/FilepondController.php',
+        'RahulHaque\\Filepond\\Models\\Filepond' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/Models/Filepond.php',
+        'RahulHaque\\Filepond\\Services\\FilepondService' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/Services/FilepondService.php',
+        'RahulHaque\\Filepond\\Traits\\HasFilepond' => __DIR__ . '/..' . '/rahulhaque/laravel-filepond/src/Traits/HasFilepond.php',
         'Ramsey\\Collection\\AbstractArray' => __DIR__ . '/..' . '/ramsey/collection/src/AbstractArray.php',
         'Ramsey\\Collection\\AbstractCollection' => __DIR__ . '/..' . '/ramsey/collection/src/AbstractCollection.php',
         'Ramsey\\Collection\\AbstractSet' => __DIR__ . '/..' . '/ramsey/collection/src/AbstractSet.php',
@@ -6315,6 +6341,11 @@ class ComposerStaticInitd4a662a7261f480501680f2ae6013b19
         'SebastianBergmann\\Type\\UnknownType' => __DIR__ . '/..' . '/sebastian/type/src/type/UnknownType.php',
         'SebastianBergmann\\Type\\VoidType' => __DIR__ . '/..' . '/sebastian/type/src/type/VoidType.php',
         'SebastianBergmann\\Version' => __DIR__ . '/..' . '/sebastian/version/src/Version.php',
+        'Sopamo\\LaravelFilepond\\Exceptions\\InvalidPathException' => __DIR__ . '/..' . '/sopamo/laravel-filepond/src/Exceptions/InvalidPathException.php',
+        'Sopamo\\LaravelFilepond\\Exceptions\\LaravelFilepondException' => __DIR__ . '/..' . '/sopamo/laravel-filepond/src/Exceptions/LaravelFilepondException.php',
+        'Sopamo\\LaravelFilepond\\Filepond' => __DIR__ . '/..' . '/sopamo/laravel-filepond/src/Filepond.php',
+        'Sopamo\\LaravelFilepond\\Http\\Controllers\\FilepondController' => __DIR__ . '/..' . '/sopamo/laravel-filepond/src/Http/Controllers/FilepondController.php',
+        'Sopamo\\LaravelFilepond\\LaravelFilepondServiceProvider' => __DIR__ . '/..' . '/sopamo/laravel-filepond/src/LaravelFilepondServiceProvider.php',
         'Stringable' => __DIR__ . '/..' . '/phabel-transpiler74.symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'Symfony\\Component\\Console\\Application' => __DIR__ . '/..' . '/symfony/console/Application.php',
         'Symfony\\Component\\Console\\Attribute\\AsCommand' => __DIR__ . '/..' . '/symfony/console/Attribute/AsCommand.php',

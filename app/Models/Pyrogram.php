@@ -10,13 +10,37 @@ use Carbon\Carbon;
 
 use App\Models\Meta;
 use App\Models\Work;
+use App\Models\WorkProperty;
 use App\Models\tAcc;
+use App\Models\Spam;
 
 class Pyrogram extends Model
 {
   use HasFactory;
 
+  public static function setGroupBan($workId, $phone){
+
+    $name = WorkProperty::where('work_id', $workId)->where('name', 'chat_id')->first()->value;
+    Spam::where('peer', $name)->where('t_acc_phone', $phone)->update(['status' => -1]);
+
+    return true;
+
+  }
+
+  public static function setBadGroupName($workId){
+
+    $name = WorkProperty::where('work_id', $workId)->where('name', 'chat_id')->first()->value;
+    Spam::where('peer', $name)->update(['status' => -3]);
+
+    return true;
+  }
+
   public static function api(){
+
+    // Spam::pDoSends();
+    // Spam::pDoJoins();
+
+
     $works = Work::getActualWorks();
 
     $fWorks = [];

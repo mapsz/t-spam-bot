@@ -28,6 +28,7 @@ Route::get('/crone', function () {
   
   App\Models\Spam::pDoSends();
   App\Models\Spam::pDoJoins();
+  App\Models\TAcc::removeStops();
 
 });
 
@@ -67,6 +68,12 @@ Route::group([], function (){
 
 //Juge CRUD
 Route::middleware(['auth'])->group(function (){
+
+  {//Juge File Upload
+    Route::post('/juge/file/upload',    [App\Http\Controllers\JugeFileUploadController::class, 'fileUpload']);
+    Route::delete('/juge/file/delete',  [App\Http\Controllers\JugeFileUploadController::class, 'fileDelete']);
+  }
+
   Route::get('/juge', 'App\Http\Controllers\JugeCRUDController@get');
   Route::get('/juge/keys', 'App\Http\Controllers\JugeCRUDController@getKeys');
   Route::get('/juge/inputs', 'App\Http\Controllers\JugeCRUDController@getInputs');    
@@ -77,6 +84,7 @@ Route::middleware(['auth'])->group(function (){
   
   //Config
   Route::post('/juge/crud/settings', 'App\Http\Controllers\JugeCRUDController@postConfig');
+
 });
 
 

@@ -40,11 +40,29 @@ class Work extends Model
 
       //Properties
       if($properties){
-        foreach ($properties as $key => $value) {
+        foreach ($properties as $k => $value) {
+
+          dump($k);
+          dump($value);
+
+
+          if($k == 'images'){
+            foreach ($value as $image) {
+              $data = file_get_contents(public_path() . $image);
+              $base64 = base64_encode($data);
+
+              $prop = new WorkProperty;
+              $prop->work_id = $work->id;
+              $prop->name = 'image';
+              $prop->value = $base64;
+              $prop->save();
+            }
+            continue;
+          }
           
           $prop = new WorkProperty;
           $prop->work_id = $work->id;
-          $prop->name = $key;
+          $prop->name = $k;
           $prop->value = $value;
           $prop->save();
         }

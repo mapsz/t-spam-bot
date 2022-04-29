@@ -79,6 +79,12 @@
       <span v-else-if="data.field.type == 'image'">
         <img :src="data.value" alt="">
       </span>
+      <!-- Images -->
+      <span v-else-if="data.field.type == 'images'">
+        <div style="display: flex;">
+          <img v-for="(v, index) in data.value" :key="index" :src="v" alt="" style="height: 75px; margin: 0px 5px;">
+        </div>        
+      </span>
       <!-- Custom -->
       <span v-else-if="data.field.type == 'custom'">
         <component :is="data.field.component" :data="data.item" @success="success()" @refresh="refreshTable()"></component>

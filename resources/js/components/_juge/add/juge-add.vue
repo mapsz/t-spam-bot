@@ -23,7 +23,7 @@
 export default {  
 props: ['model'],
 data(){return{
-  addShow:false,
+  addShow:0,
   refresh:0,
 }},
 computed:{

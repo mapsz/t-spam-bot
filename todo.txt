@@ -1,2 +1,2 @@
-login
 crone
+auto clean work done_at is null

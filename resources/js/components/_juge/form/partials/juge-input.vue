@@ -1,5 +1,5 @@
 <template>  
-  <span style="display:flex;align-items: center;">
+  <span :style="input.type == 'file' ? '' : 'display:flex;'" style="align-items: center;">
 
     <!-- Locked -->
     <div v-if="input.type == 'locked'">
@@ -25,17 +25,19 @@
     </span> -->
 
     <!-- File -->
-    <div v-else-if="input.type == 'file'">      
-      <file-upload        
-        v-model="value"
-        :file-type="input.fileType" 
-        :max-file-count="input.fileMax" 
-        :value="value"
-      />
+    <div v-else-if="input.type == 'file'" style="display: block;">
+      <div>
+        <juge-file-upload        
+          v-model="value"
+          :file-type="input.fileType" 
+          :max-file-count="input.fileMax" 
+          :value="value"
+        />
+      </div>
     </div>
 
     <!-- Checkbox -->
-    <b-form-checkbox v-else-if="input.type == 'checkbox'"      
+    <b-form-checkbox v-else-if="input.type == 'checkbox'"
       v-model="value" 
       :name="input.name"
       :id="input.name + '-input-' + cid"

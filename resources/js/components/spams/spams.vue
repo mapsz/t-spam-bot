@@ -12,7 +12,9 @@
 
 <script>
 import {mapGetters, mapActions} from 'vuex';
+import jugeFileUpload from '../_juge/juge-file-upload.vue';
 export default {
+  components: { jugeFileUpload },
 
 }
 </script>

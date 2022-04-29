@@ -19,7 +19,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'b396d1c1b45b15cec34d7afb892f40005014085e',
+    'reference' => '9c51eaf3f73b9be89236807d5a11a2148a6b3452',
     'name' => 'laravel/laravel',
   ),
   'versions' => 
@@ -703,7 +703,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'b396d1c1b45b15cec34d7afb892f40005014085e',
+      'reference' => '9c51eaf3f73b9be89236807d5a11a2148a6b3452',
     ),
     'laravel/sail' => 
     array (
@@ -1586,6 +1586,15 @@ private static $installed = array (
       ),
       'reference' => '7f7da640d68b9c9fec819caae7c744a213df6514',
     ),
+    'rahulhaque/laravel-filepond' => 
+    array (
+      'pretty_version' => 'v1.6.8',
+      'version' => '1.6.8.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '50b3d6b7cdc2b3c04af8774b51cd0cd647c77533',
+    ),
     'ralouphie/getallheaders' => 
     array (
       'pretty_version' => '3.0.3',
@@ -1763,6 +1772,15 @@ private static $installed = array (
       array (
       ),
       'reference' => 'c6c1022351a901512170118436c764e473f6de8c',
+    ),
+    'sopamo/laravel-filepond' => 
+    array (
+      'pretty_version' => 'v1.1.0',
+      'version' => '1.1.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '87ec876076c34093d177039b52b9840be55461ac',
     ),
     'swiftmailer/swiftmailer' => 
     array (

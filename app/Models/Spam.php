@@ -28,10 +28,12 @@ class Spam extends Model
     ['key'    => 'delay','label' => 'Задержка'],
     ['key'    => 'status', 'label' => 'Активен','type' => 'intToStr', 'intToStr' =>[
       -1 => 'бан ⛱️',
+      -3 => 'Плохое название 🤷‍♀️',
       3 => 'бан ⛱️',
       1 => 'да',
       0 => 'нет',
     ]],
+    ['key'    => 'images','label' => 'Картинки', 'type' => 'images'],
     ['key'    => 'sent_at','label' => 'Last Send At', 'type' => 'moment', 'moment' => 'lll'],
     ['key'    => 'created_at','label' => 'Создан', 'type' => 'moment', 'moment' => 'lll'],
   ];
@@ -70,6 +72,12 @@ class Spam extends Model
       'caption' => 'Текст',
       'type' => 'textEditor'
     ],
+    [
+      'name' => 'images',
+      'caption' => 'Картинки',
+      'type' => 'file',
+      'fileMax' => 8,
+    ],
   ];
 
 
@@ -86,7 +94,8 @@ class Spam extends Model
         $q1->whereNull('group_joined_at');
       });
       $q = $q->with('spams', function($q1){
-        $q1->whereNull('group_joined_at');
+        $q1->where('status', 1)
+          ->whereNull('group_joined_at');
       });
       $tAccs = $q->get();
     }
@@ -149,14 +158,7 @@ class Spam extends Model
     
     {//Get spams
       {// Get spams
-        $q = new Spam;
-        $q = $q->where('status', 1);
-        $q = $q->whereNotNull('group_joined_at');
-        $q = $q->orderBy('sent_at', 'ASC');
-        $q = $q->whereHas('tAcc', function($q1){
-          $q1 = $q1->where('status',1);
-        });
-        $dbSpams = $q->get();
+        $dbSpams = Spam::jugeGet(['toSend' => 1]);
       }
       
       {//Get actuals
@@ -210,7 +212,7 @@ class Spam extends Model
           if(intval($spam->id) == intval($workExists['spam_id'])) continue 2;
         }
         dump('Add work send_message - ' . $spam->t_acc_phone . ' - ' . $spam->peer);
-        Work::new($spam->t_acc_phone, 'send_message', 1000, ['chat_id' => $spam->peer, 'text' => $spam->text, 'spam_id' => $spam->id]); 
+        Work::new($spam->t_acc_phone, 'send_message', 1000, ['chat_id' => $spam->peer, 'text' => $spam->text, 'spam_id' => $spam->id, 'images' => $spam->images]); 
         $add++; 
       }  
     }
@@ -662,7 +664,21 @@ class Spam extends Model
 
   }
 
+  public static function getImages($id){
 
+    $path = public_path() . '/spam/images';
+    $files = scandir($path);
+
+    $rFiles = [];
+    foreach ($files as $file) {
+      if(strpos($file,$id.'_') === 0){
+        array_push($rFiles,'/spam/images/' .$file);
+      }      
+    }
+
+    return $rFiles;
+
+  }
 
   //JugeCRUD  
   public function jugeGetInputs(){
@@ -708,6 +724,18 @@ class Spam extends Model
         if($user && $user->id != 1) $query = $query->where('owner_id', $user->id);        
       }
 
+      {//To send
+        if(isset($request['toSend']) && $request['toSend'] == 1){
+          $query = $query->where('status', 1);
+          $query = $query->whereNotNull('group_joined_at');
+          $query = $query->orderBy('sent_at', 'ASC');
+          $query = $query->whereHas('tAcc', function($q1){
+            $q1 = $q1->where('status',1);
+          });
+        }
+      }
+
+
     }
 
     //Order by
@@ -715,6 +743,17 @@ class Spam extends Model
   
     //Get
     $data = JugeCRUD::get($query,$request);
+
+    {//After query work
+
+      //Images
+      if(!isset($request['no_images'])){
+        foreach ($data as $row) {
+          $row->images = self::getImages($row->id);          
+        }
+      }
+
+    }    
   
     //Single
     if(isset($request['id']) && isset($data[0])){$data = $data[0];}

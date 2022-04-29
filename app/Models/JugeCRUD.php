@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+
+use App\Models\JugeFileUpload;
 
 class JugeCRUD extends Model
 {
@@ -55,6 +58,10 @@ class JugeCRUD extends Model
     return $data;
   }
 
+  public static function getImages(){
+    //
+  }
+
   public static function whereSearches($query,$request){
     if(isset($request['id'])) $query = $query->where('id', $request['id']);
     return $query;
@@ -62,15 +69,82 @@ class JugeCRUD extends Model
 
   public static function autoPut($model, $data){
 
-    // dd($data);
-    //Edit
-    foreach ($data as $k => $v) {
-      if($k == 'id') continue;
-      $model->$k = $v;
+    //Get inputs
+    $modelInputs = $model->jugeGetInputs();
+    
+    {//Set Data Type
+      $files = [];
+      $db = [];
+      foreach ($data as $k => $v) {
+  
+        //Id
+        if($k == 'id') continue;
+  
+        //Files
+        foreach ($modelInputs as $input) {
+          if($input['name'] == $k){
+            if($input['type'] == 'file'){
+              $files[$k] = $v;
+              continue 2;
+            }
+          }
+        }
+  
+        //DB
+        $db[$k] = $v;
+      }
+    }   
+
+    {//Setup model to put
+      foreach ($db as $k => $v) {
+        $model->$k = $v;
+      }
+    }   
+
+    try{
+      //Start DB
+      DB::beginTransaction();
+      
+      //Save DB
+      $save = $model->save();
+
+      
+      {//Save Files
+
+        $id = $model->id;
+
+        {//get class name
+          $arr = explode('\\',get_class($model));
+          $modelName = strtolower ($arr[count($arr)-1]);
+        }
+
+
+               
+
+        //Save
+        foreach ($files as $k => $fs) {
+          //Make path
+          $path = public_path() . '/' . $modelName . '/' . $k . '/';
+
+          
+          foreach ($fs as $file) {
+            //Make name
+            $fileName = JugeFileUpload::generateFileName($path, $id);
+
+            //Save
+            if(!JugeFileUpload::saveFile($file, $path.$fileName)) return false;
+          }
+          
+        }
+      }      
+      
+      //Store to DB
+      DB::commit();
+    } catch (Exception $e){
+      // Rollback from DB
+      DB::rollback();
     }
 
-    //Save
-    $save = $model->save();
     if($save) return $model->jugeGet(['id' => $model->id]);
 
     return false;

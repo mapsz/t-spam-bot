@@ -8,6 +8,7 @@
       <span v-if="data.status == 0" >НЕлогинен ❌😱</span>
       <span v-if="data.status == -1" >бан ⛱️</span>
       <span v-if="data.status == 2" >Логинем 🐤</span>
+      <span v-if="data.status == -2" >Стоп 🚏 {{ moment.unix(parseInt(1650554802)).locale("ru").format('LTS') }}</span>
     </div>
 
     <div>
@@ -48,6 +49,7 @@ import {mapGetters, mapActions} from 'vuex';
 export default {
 props: ['data'],
 data(){return{
+  moment:moment,
   code:"",
   errors:false,
   activateHandle:false,

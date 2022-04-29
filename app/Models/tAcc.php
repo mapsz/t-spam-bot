@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Meta;
 
@@ -28,6 +29,61 @@ class TAcc extends Model
     // ]],
     ['key'    => 'created_at','label' => 'Создан', 'type' => 'moment', 'moment' => 'lll'],
   ];
+
+  public static function setStop($phone, $minutes = 30){
+
+      //Acc
+      $tAcc = tAcc::where('phone', $phone)->first();
+      $tAcc->status = -2;
+      $tAcc->save();
+  
+      //Meta
+      $meta = Meta::updateOrCreate(
+        ['metable_id' => $tAcc->id, 'metable_type' => 'App\Models\TAcc', 'name' => 'stop'],
+        ['value' => now()->timestamp + (60 * $minutes)]
+      );
+
+      return true;
+
+  }
+
+  public static function removeStops(){
+
+    $metas = Meta::where('metable_type', 'App\Models\TAcc')->where('name', 'stop')->where('value', '<', now()->timestamp)->get();
+
+    try{
+      //Start DB
+      DB::beginTransaction();
+
+      {//Update tAcc status
+        $tAccIds = [];
+        foreach ($metas as $key => $meta) {
+          array_push($tAccIds, $meta->metable_id);
+        }
+  
+        tAcc::whereIn('id', $tAccIds)->update(['status' => 1]);
+      }
+
+      //Remove metas
+      {//Update tAcc status
+        $metaIds = [];
+        foreach ($metas as $key => $meta) {
+          array_push($metaIds, $meta->id);
+        }
+  
+        Meta::whereIn('id', $metaIds)->delete();
+      }      
+      
+      //Store to DB
+      DB::commit();
+    } catch (Exception $e){
+      // Rollback from DB
+      DB::rollback();
+    }
+
+    return true;
+
+  }
 
   public static function updateLoginTime($phone){
 
